@@ -1,0 +1,87 @@
+@media (prefers-color-scheme: light) {
+    :root {
+        --text: black;
+        --background: white;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text: white;
+        --background: black;
+    }
+}
+
+*, 
+*::before, 
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    background-color: var(--background);
+    padding: 0px;
+    margin: 0px;
+    font-size: 16px;
+    font-weight: normal;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
+}
+
+#form {
+    width: 100%;
+    height: 100%;
+    background-color: var(--background);
+    color: var(--text);
+    font-size: 16px;
+    font-weight: normal;
+}
+
+#form fieldset {
+    border: none;
+    width: 100%;
+    height: 100%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#form fieldset:first-of-type {
+    padding: 8px;
+}
+
+button {
+    background-color: var(--text);
+    color: var(--background);
+    padding: 8px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+input, textarea {
+    width: 100%;
+    height: 100%;
+    border: none;
+    background-color: var(--background);
+    color: var(--text);
+    padding: 8px 8px;
+
+    &:focus, &:active {
+        border: none;
+        outline: none;
+    }
+}
+
+input {
+    font-size: 21px;
+    font-weight: bold;
+}
+
+textarea {
+    font-size: 16px;
+    font-weight: medium;
+}
