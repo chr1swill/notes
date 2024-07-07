@@ -1,4 +1,6 @@
+'use strict';
 (function () {
+
     /**@type{HTMLFormElement | null }*/
     const form = document.getElementById("form");
     if (form === null) {
@@ -89,10 +91,17 @@
         }
 
         /**
+         * @returns{HTMLElement | ReferenceError }
+         */
+        getElement(id) {
+            const element 
+        }
+
+        /**
          * @returns{Note.id}
          */
         #generateNoteId() {
-            return (Data.now() + Math.random()).toString();
+            return (Date.now() + Math.random()).toString();
         }
 
         /**
