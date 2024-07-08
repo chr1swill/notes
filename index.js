@@ -161,10 +161,9 @@
         }
 
         /**
-         * @param {string} [id=this.#currentNoteId] - notes id
          * @returns{Note | null} - a note matching the provided id or null if no match
          */
-        getNoteFromStorage(id = this.#currentNoteId) { 
+        getCurrentNoteFromStorage() { 
             /**@type {Note}*/
             let note = {};
 
@@ -172,7 +171,7 @@
             let tmp;
 
             try {
-                tmp = localStorage.getItem(id || this.#currentNoteId);
+                tmp = localStorage.getItem(this.#currentNoteId);
             } catch (e) {
                 console.error(e);
                 return null;
@@ -225,7 +224,29 @@
         }
 
         window.addEventListener("DOMContentLoaded", function () {
-            nc.getNoteFromStorage();
+            if ( form === null ) { 
+                console.error("Failed to access element with id: #form");
+                return; 
+            }
+            const id = this.localStorage.getItem("currentNoteId");
+            if (id === null) { 
+                console.error("Failed to access localStorage key: currentNoteId");
+                return; 
+            }
+
+            form.setAttribute("data-note-id", id);
+            const note = nc.getCurrentNoteFromStorage();
+            if (note === null) {
+                console.error("Failed to get not from storage");
+                return;
+            }
+
+            if (textareaNoteBody === null) {
+                console.error("Could not find element matching id: note_body");
+                return;
+            }
+
+            textareaNoteBody.value = note.body;
         });
     }
 
