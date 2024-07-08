@@ -1,36 +1,29 @@
-'use strict';
-(function () {
-
-    /**@type{HTMLFormElement | null }*/
-    const form = document.getElementById("form");
+(function() {
+    const form = /**@type{HTMLFormElement | null }*/
+        (document.getElementById("form"));
     if (form === null) {
         console.error("Could not find element with id: #form");
         return;
     }
 
-    /**@type{HTMLButtonElement | null}*/
-    const buttonNewNote = document.getElementById("button_new_note");
+
+    const buttonNewNote = /**@type{HTMLButtonElement | null}*/
+        (document.getElementById("button_new_note"));
     if (buttonNewNote === null) {
         console.error("Could not find element with id: #button_new_note");
         return;
     }
 
-    /**@type{HTMLButtonElement | null}*/
-    const buttonSave = document.getElementById("button_save");
+
+    const buttonSave = /**@type{HTMLButtonElement | null}*/
+        (document.getElementById("button_save"));
     if (buttonSave === null) {
         console.error("Could not find element with id: #button_save");
         return;
     }
 
-    /**@type{HTMLInputElement | null}*/
-    const inputNoteTitle = document.getElementById("note_title");
-    if (inputNoteTitle === null) {
-        console.error("Could note find element with id: #note_title");
-        return;
-    }
-
-    /**@type{HTMLTextAreaElement | null}*/
-    const textareaNoteBody = document.getElementById("note_body");
+    const textareaNoteBody = /**@type{HTMLTextAreaElement | null}*/
+        (document.getElementById("note_body"));
     if (textareaNoteBody === null) {
         console.error("Could not find element with id: #note_body");
         return;
@@ -39,20 +32,19 @@
     /**
      * @typedef {Object} Note
      * @property {string} id - generated id of note
-     * @property {string} title - user chosen title
-     * @property {string} body - user chosen body 
+     * @property {string} body - the text the is contained in a note
      */
 
     class NoteController {
 
-        /**@type {Note.id} */
+        /**@type {string} */
         #currentNoteId = ""
 
         constructor() {
-            const noteId = localStorage.getItem("currentNoteId"); 
+            const noteId = localStorage.getItem("currentNoteId");
 
             if (noteId === null) {
-                /**@type{Note.id}*/
+                /**@type{string | null}*/
                 const newNoteId = this.createNewNote();
                 if (newNoteId === null) {
                     console.error("Failed to created a new note");
@@ -63,8 +55,13 @@
 
                 try {
                     localStorage.setItem("currentNoteId", this.#currentNoteId);
-                } catch(e) {
+                } catch (e) {
                     console.error(e);
+                    return;
+                }
+
+                if (form === null) {
+                    console.error("Could note find element with id: #form");
                     return;
                 }
 
@@ -72,10 +69,10 @@
             } else {
                 /**@type{Note | null}*/
                 let currentNote;
-                try { 
+                try {
                     currentNote = /**@type{Note | null }*/(localStorage.getItem(noteId));
-                    if (currentNote === null) 
-                        throw new ReferenceError("Could not find note with id matching current note id: ", noteId);
+                    if (currentNote === null)
+                        throw new ReferenceError(`Could not find note with id matching current note id:  ${noteId}`);
 
                 } catch (e) {
                     console.error(e);
@@ -84,21 +81,18 @@
 
                 this.#currentNoteId = currentNote.id;
 
+                if (form === null || textareaNoteBody === null) {
+                    console.error("Failed to access element form or textarea");
+                    return;
+                }
+
                 form.setAttribute("data-note-id", this.#currentNoteId);
-                inputNoteTitle.value = currentNote.title;
                 textareaNoteBody.value = currentNote.body;
             }
         }
 
         /**
-         * @returns{HTMLElement | ReferenceError }
-         */
-        getElement(id) {
-            const element 
-        }
-
-        /**
-         * @returns{Note.id}
+         * @returns{string}
          */
         #generateNoteId() {
             return (Date.now() + Math.random()).toString();
@@ -108,30 +102,39 @@
          * @returns{Note | null} - the note you just saved created note
          */
         saveCurrentNote() {
+            if (form === null) {
+                console.error("Could not find element with id: #form");
+                return null;
+            }
+
             /**@type{Note}*/
             const note = {}
 
-
-            let noteId = form.getAttribute("data-note-id");
-            if (noteId !== this.#currentNoteId()) {
-                this.#currentNoteId = noteId.trim();
-                form.setAttribute("data-note-id", noteId.trim());
-            }
+            let noteId = form?.getAttribute("data-note-id");
 
             if (noteId === null) {
                 noteId = this.createNewNote()
+                if (noteId === null) {
+                    console.error("Failed to create new note");
+                    return null;
+                }
             }
+            console.assert(noteId === this.#currentNoteId,
+                `The current note from local storage did not match the id in the attribute data-note-id on the form:  
+                noteId: ${noteId} 
+                this.currentNoteId ${this.#currentNoteId}`,)
 
-            const noteTitle = inputNoteTitle.value;
-            const noteBody = textareaNoteBody;
+            if (textareaNoteBody === null) {
+                console.error("Could not find element matching id: #note_body");
+            }
+            const noteBody = textareaNoteBody?.value || "";
 
             note.id = noteId;
-            note.title = noteTitle;
             note.body = noteBody;
-            
+
             try {
                 localStorage.setItem(this.#currentNoteId, JSON.stringify(note));
-            } catch {
+            } catch (e) {
                 console.error(e);
                 return null;
             }
@@ -140,9 +143,9 @@
         }
 
         /**
-         * @returns{Note.id | null} id of the newly created note
+         * @returns{string | null} id of the newly created note
          */
-        createNewNote() { 
+        createNewNote() {
             const newNoteId = this.#generateNoteId();
 
             try {
@@ -152,21 +155,54 @@
                 return null;
             }
 
-            this.#currentNoteId = /**@type{Note.id}*/(newNoteId);
+            this.#currentNoteId = /**@type{string}*/(newNoteId);
 
             return this.#currentNoteId;
         }
 
         /**
-         * @param {Note.id} id - notes id
+         * @param {string} [id=this.#currentNoteId] - notes id
          * @returns{Note | null} - a note matching the provided id or null if no match
          */
-        getNoteFromStorage(id) { }
+        getNoteFromStorage(id = this.#currentNoteId) { 
+            /**@type {Note}*/
+            let note = {};
+
+            /**@type {string | Note | null}*/
+            let tmp;
+
+            try {
+                tmp = localStorage.getItem(id || this.#currentNoteId);
+            } catch (e) {
+                console.error(e);
+                return null;
+            }
+
+            note.id = this.#currentNoteId;
+
+            if (tmp === null) {
+                console.debug("Could not find any key in localStorage matching current notes id");
+                note.body = "";
+                return note;
+            }
+
+            tmp = /**@type{Note}*/(JSON.parse(tmp));
+            note.body = tmp.body;
+
+            // for gc ;)
+            tmp = null;
+
+            return note;
+        }
     }
 
     function main() {
         const nc = new NoteController();
 
+        if (buttonSave === null) {
+            console.error("Could note find element with id: #button_save");
+            return;
+        }
         buttonSave.onclick = function(e) {
             e.preventDefault();
             const note = nc.saveCurrentNote();
@@ -179,10 +215,18 @@
             }
         }
 
+        if (buttonNewNote === null) {
+            console.error("Could note find element with id: #button_new_note");
+            return;
+        }
         buttonNewNote.onclick = function(e) {
             e.preventDefault();
             nc.createNewNote()
         }
+
+        window.addEventListener("DOMContentLoaded", function () {
+            nc.getNoteFromStorage();
+        });
     }
 
     main();
