@@ -1,4 +1,8 @@
 const home = (function() {
+    /**
+     * @typedef {import('../types/types.ts').Note} Note
+     */
+
     const form = /**@type{HTMLFormElement | null }*/
         (document.getElementById("form"));
     if (form === null) {
@@ -29,16 +33,11 @@ const home = (function() {
         return;
     }
 
-    /**
-     * @typedef {Object} Note
-     * @property {string} id - generated id of note
-     * @property {string} body - the text the is contained in a note
-     */
-
     class NoteController {
 
         /**@type {string} */
-        #currentNoteId = ""
+        /**@type {number}*/
+        #currentNoteId = 0; 
 
         constructor() {
             const noteId = localStorage.getItem("currentNoteId");
@@ -92,10 +91,10 @@ const home = (function() {
         }
 
         /**
-         * @returns{string}
+         * @returns{number}
          */
         #generateNoteId() {
-            return (Date.now() + Math.random()).toString();
+            return Date.now() + Math.random();
         }
 
         /**

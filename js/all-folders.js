@@ -1,9 +1,6 @@
 const allFolders = (function () {
     /**
-     * @typedef {Object} Folder
-     * @property {number} id 
-     * @property {string} name
-     * @property {Array<number>} notesInFolder
+     * @typedef { import('../types/types.js').Folder } Folder
      */
 
     /**
@@ -14,9 +11,8 @@ const allFolders = (function () {
     }
 
     /**
-     * @typedef { { [key: number]: Folder } } FolderCollection - the number used to index into the Folder will be its corisponsing id
+     * @typedef { import('../types/types.js').FolderCollection } FolderCollection
      */
-
 
     /**
      * @returns {FolderCollection | null}
