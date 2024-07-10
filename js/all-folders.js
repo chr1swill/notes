@@ -134,6 +134,16 @@ const allFolders = (function () {
             fragment.appendChild(li);
         }
 
+        const aEl = document.createElement("a");
+        aEl.textContent = "All Notes";
+        aEl.setAttribute("data-folder-name", "all-notes");
+        aEl.setAttribute("href", `${window.location.origin + "/folder-view/folder?id=" + "all-notes"}`);
+
+        const liEl = document.createElement("li");
+        liEl.appendChild(aEl);
+
+        fragment.prepend(liEl);
+
         while (folderListContainer.firstChild) {
             folderListContainer.removeChild(folderListContainer.firstChild);
         }
