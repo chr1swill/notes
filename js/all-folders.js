@@ -106,6 +106,23 @@ const allFolders = (function () {
         return newFolder;
     }
 
+    function handleClickOnCreateFolderButton() {
+        let prompt = window.prompt("Choose Folder Name: ");
+
+        while (prompt === null || prompt.trim().length < 1 || prompt.trim().length > 125) {
+            if (prompt === null) return;
+            prompt = window.prompt("Choose Folder Name: ");
+        } 
+
+        const newFolder = createFolder(prompt);
+        if (newFolder === null) {
+            console.error("An error occured while trying to create a new folder");
+            return;
+        }
+
+        renderFolderListToDOM();
+    }
+
     function renderFolderListToDOM() {
         const folderListContainer = /**@type{HTMLUListElement | null} */
             (document.getElementById("folder_list_container"));
@@ -152,6 +169,13 @@ const allFolders = (function () {
     }
 
     function main() {
+        const newFolderButton = document.getElementById("button_create_new_folder");
+        if (newFolderButton === null) {
+            console.error("Failed to find element matching id: #button_create_new_folder");
+            return;
+        }
+
+        newFolderButton.onclick = handleClickOnCreateFolderButton;
         window.onload = renderFolderListToDOM;
     }
 
