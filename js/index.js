@@ -43,7 +43,7 @@ const home = (function() {
             const noteId = localStorage.getItem("currentNoteId");
 
             if (noteId === null) {
-                /**@type{string | null}*/
+                /**@type{number | null}*/
                 const newNoteId = this.createNewNote();
                 if (newNoteId === null) {
                     console.error("Failed to created a new note");
@@ -53,7 +53,7 @@ const home = (function() {
                 this.#currentNoteId = newNoteId;
 
                 try {
-                    localStorage.setItem("currentNoteId", this.#currentNoteId);
+                    localStorage.setItem("currentNoteId", this.#currentNoteId.toString());
                 } catch (e) {
                     console.error(e);
                     return;
@@ -64,7 +64,7 @@ const home = (function() {
                     return;
                 }
 
-                form.setAttribute("data-note-id", this.#currentNoteId);
+                form.setAttribute("data-note-id", this.#currentNoteId.toString());
             } else {
                 /**@type{Note | null}*/
                 let currentNote;
@@ -85,7 +85,7 @@ const home = (function() {
                     return;
                 }
 
-                form.setAttribute("data-note-id", this.#currentNoteId);
+                form.setAttribute("data-note-id", this.#currentNoteId.toString());
                 textareaNoteBody.value = currentNote.body;
             }
         }
@@ -109,6 +109,7 @@ const home = (function() {
             /**@type{Note}*/
             const note = {}
 
+            /**@type { string | number | null }*/
             let noteId = form?.getAttribute("data-note-id");
 
             if (noteId === null) {
@@ -117,7 +118,11 @@ const home = (function() {
                     console.error("Failed to create new note");
                     return null;
                 }
+
+            } else {
+                noteId = parseFloat(noteId)
             }
+
             console.assert(noteId === this.#currentNoteId,
                 `The current note from local storage did not match the id in the attribute data-note-id on the form:  
                 noteId: ${noteId} 
@@ -132,7 +137,7 @@ const home = (function() {
             note.body = noteBody;
 
             try {
-                localStorage.setItem(this.#currentNoteId, JSON.stringify(note));
+                localStorage.setItem(this.#currentNoteId.toString(), JSON.stringify(note));
             } catch (e) {
                 console.error(e);
                 return null;
@@ -142,19 +147,19 @@ const home = (function() {
         }
 
         /**
-         * @returns{string | null} id of the newly created note
+         * @returns{number | null} id of the newly created note
          */
         createNewNote() {
             const newNoteId = this.#generateNoteId();
 
             try {
-                localStorage.setItem("currentNoteId", newNoteId);
+                localStorage.setItem("currentNoteId", newNoteId.toString());
             } catch (e) {
                 console.error(e);
                 return null;
             }
 
-            this.#currentNoteId = /**@type{string}*/(newNoteId);
+            this.#currentNoteId = newNoteId;
 
             return this.#currentNoteId;
         }
@@ -170,7 +175,7 @@ const home = (function() {
             let tmp;
 
             try {
-                tmp = localStorage.getItem(this.#currentNoteId);
+                tmp = localStorage.getItem(this.#currentNoteId.toString());
             } catch (e) {
                 console.error(e);
                 return null;
