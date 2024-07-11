@@ -107,9 +107,27 @@ export function getUrlStateToLocalStorage() {}
 export function saveUrlStateToLocalStorage() {}
 
 function main() {
-    const form = document.getElementById("form");
+    const form = /**@type{HTMLFormElement | null} */(document.getElementById("form"));
     if (form === null) {
         console.error("Could not find element with id: #form");
+        return;
+    }
+
+    const buttonNewNote = /**@type{HTMLButtonElement | null}*/ (document.getElementById("button_new_note"));
+    if (buttonNewNote === null) {
+        console.error("Could not find element with id: #button_new_note");
+        return;
+    }
+
+    const buttonSaveNote = /**@type{HTMLButtonElement | null}*/ (document.getElementById("button_save"));
+    if (buttonSaveNote === null) {
+        console.error("Could not find element with id: #button_save");
+        return;
+    }
+
+    const noteBody = /**@type{HTMLTextAreaElement | null}*/(document.getElementById("note_body"));
+    if (noteBody === null) {
+        console.error("Could note find element with id: #note_body");
         return;
     }
 }
