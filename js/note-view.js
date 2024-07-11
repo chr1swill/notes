@@ -4,10 +4,6 @@
 
 class NoteController {
 
-    /**@type {string} */
-    /**@type {number}*/
-    #currentNoteId = 0;
-
     constructor() {
         const noteId = localStorage.getItem("currentNoteId");
 
@@ -28,12 +24,13 @@ class NoteController {
                 return;
             }
 
-            if (form === null) {
+            this.form = this.#getElement("form");
+            if (this.form === null) {
                 console.error("Could note find element with id: #form");
                 return;
             }
 
-            form.setAttribute("data-note-id", this.#currentNoteId.toString());
+            this.form.setAttribute("data-note-id", this.#currentNoteId.toString());
         } else {
             /**@type{Note | null}*/
             let currentNote;
@@ -49,7 +46,7 @@ class NoteController {
 
             this.#currentNoteId = currentNote.id;
 
-            if (form === null || textareaNoteBody === null) {
+            if (this.form === null || textareaNoteBody === null) {
                 console.error("Failed to access element form or textarea");
                 return;
             }
@@ -57,6 +54,24 @@ class NoteController {
             form.setAttribute("data-note-id", this.#currentNoteId.toString());
             textareaNoteBody.value = currentNote.body;
         }
+    }
+
+    /**
+     * @param {string} id  - element id 
+     * @returns {HTMLElement | null}  
+     */
+    #getElement(id) {
+        const element = document.getElementById(id);
+        if (element === null) {
+            console.error("Could not find element with id in dom: ", id);
+            return null;
+        }
+
+        return element;
+    }
+
+    #init() {
+
     }
 
     /**
@@ -70,7 +85,7 @@ class NoteController {
      * @returns{Note | null} - the note you just saved created note
      */
     saveCurrentNote() {
-        if (form === null) {
+        if (this.form === null) {
             console.error("Could not find element with id: #form");
             return null;
         }
@@ -79,7 +94,7 @@ class NoteController {
         const note = {}
 
         /**@type { string | number | null }*/
-        let noteId = form?.getAttribute("data-note-id");
+        let noteId = this.form.getAttribute("data-note-id");
 
         if (noteId === null) {
             noteId = this.createNewNote()
