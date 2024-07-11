@@ -24,7 +24,21 @@ function parsePageUrlForId() {
 
 function handleClickOnNewNoteButton() { }
 
+/**
+ * @param {string} pathname 
+ * @param {keyof WindowEventMap} eventType 
+ * @param {EventListenerOrEventListenerObject} functionName
+ */
+export function removeWindowListenersIfNotRequiedOnPage(pathname, eventType, functionName) {
+    if (window.location.pathname !== `/${pathname}/index.html` || window.location.pathname !== `/${pathname}/`) {
+        console.debug("Removing function as callback from a onload event on window: ", functionName);
+        window.removeEventListener(eventType, functionName);
+    }
+}
+
 function handleGetRequestFolder() {
+    removeWindowListenersIfNotRequiedOnPage("folder-view", 'load', handleGetRequestFolder);
+
     const folders = getActiveFoldersFromLocalStorage()
     if (folders === null) {
         console.error("An Error occured trying to access all the active folders");
@@ -125,7 +139,9 @@ function main() {
         return;
     }
 
-    window.onload = handleGetRequestFolder;
+    window.addEventListener('load', handleGetRequestFolder);
 
-    newNoteButton.onclick = ;
+    newNoteButton.onclick = handleClickOnNewNoteButton;
 };
+
+main();

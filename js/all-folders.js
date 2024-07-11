@@ -1,3 +1,5 @@
+import { removeWindowListenersIfNotRequiedOnPage } from './folder-view.js';
+
 /**
  * @typedef { import('../types/types.js').Folder } Folder
  */
@@ -119,6 +121,8 @@ function handleClickOnCreateFolderButton() {
 }
 
 function renderFolderListToDOM() {
+    removeWindowListenersIfNotRequiedOnPage("all-folders", 'load', renderFolderListToDOM);
+
     const folderListContainer = /**@type{HTMLUListElement | null} */
         (document.getElementById("folder_list_container"));
     if (folderListContainer === null) {
@@ -171,7 +175,7 @@ function main() {
     }
 
     newFolderButton.onclick = handleClickOnCreateFolderButton;
-    window.onload = renderFolderListToDOM;
+    window.addEventListener('load', renderFolderListToDOM);
 }
 
 main();
