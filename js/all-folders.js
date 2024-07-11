@@ -41,7 +41,7 @@ export function getActiveFoldersFromLocalStorage() {
  * @param {Folder} folder - the folder you would like to save to localStorage
  * @returns {Folder | null}
  */
-function saveFolderToLocalStorage(folder) {
+export function saveFolderToLocalStorage(folder) {
     const allActiveFolders = getActiveFoldersFromLocalStorage();
     if (allActiveFolders === null) {
         console.error("Failed to access active Folder from localStorage: an error occurred trying to init key folderCollection in localStorage");
