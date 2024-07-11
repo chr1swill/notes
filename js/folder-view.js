@@ -31,9 +31,11 @@ function handleClickOnNewNoteButton() { }
  */
 export function removeWindowListenersIfNotRequiedOnPage(pathname, eventType, functionName) {
     if (window.location.pathname !== `/${pathname}/index.html` || window.location.pathname !== `/${pathname}/`) {
-        console.debug("Removing function as callback from a onload event on window: ", functionName);
+        console.debug("Removeing window event listener callback: ", functionName);
         window.removeEventListener(eventType, functionName);
     }
+
+    return;
 }
 
 function handleGetRequestFolder() {
