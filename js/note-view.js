@@ -21,7 +21,7 @@ function createNote() {
  * @returns {boolean} 
  */
 function validateNote(note) {
-    if (!(id in note) || !(body in note) || !(id typeof 'number') || !(body typeof 'string')) {
+    if (!('id' in note) || !('body' in note) || typeof note.id !== 'number' ||  typeof note.body !== 'string') {
         console.error("Note provided was invalid could not save it: ", note);
         return false;
     }
@@ -30,13 +30,13 @@ function validateNote(note) {
 }
 
 /**
- * @param {Note} 
+ * @param {Note} note
  * @returns {Note | null}
  */
 function saveNote(note) {
     const typeCheckNote = validateNote(note);
     if (!typeCheckNote) {
-        console.error("Invalid note was provided: " note);
+        console.error("Invalid note was provided: ", note);
         return null;
     }
 
@@ -56,7 +56,7 @@ function saveNote(note) {
  */
 function getNote(id) {
     const noteAsString = localStorage.getItem(id.toString());
-    if (note === null) {
+    if (noteAsString === null) {
         console.error("There was not a key in local storage matching the provided id: ", id);
         return null;
     }
@@ -64,7 +64,7 @@ function getNote(id) {
     const note = JSON.parse(noteAsString);
     const typeCheckNote = validateNote(note);
     if (!typeCheckNote) {
-        console.error("Value recieved was not a valid note: " note);
+        console.error("Value recieved was not a valid note: ", note);
         return null;
     }
 
@@ -77,22 +77,18 @@ function getNote(id) {
  * @returns {Note | null} 
  */
 function updateNote(id, body) {
-    if (!(body typeof 'string')) {
-        body = body.toString();
-    }
-
     body = body.trim();
 
-    const noteAsString = localStorage.getItem(note.id.toString());
+    const noteAsString = localStorage.getItem(id.toString());
     if (noteAsString === null) {
         console.error("There was not note in localStorage matching the provided id: ", id);
         return null;
     }
 
-    const note = JSON.parse(note);
+    const note = JSON.parse(noteAsString);
     const typeCheckNote = validateNote(note);
     if (!typeCheckNote) {
-        console.error("Value recieved was not a valid note: " note);
+        console.error("Value recieved was not a valid note: ", note);
         return null;
     }
 
