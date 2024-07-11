@@ -178,4 +178,4 @@ function main() {
     window.addEventListener('load', renderFolderListToDOM);
 }
 
-main();
+if (window.location.pathname === "/all-folders/" || window.location.pathname === '/all-folders/index.htm') main();

@@ -144,4 +144,4 @@ function main() {
     newNoteButton.onclick = handleClickOnNewNoteButton;
 };
 
-main();
+if (window.location.pathname === "/folder-view/" || window.location.pathname === '/folder-view/index.htm') main();
