@@ -1,7 +1,16 @@
 import { getActiveFoldersFromLocalStorage, saveFolderToLocalStorage } from './all-folders.js'
+import { createNote, saveNote } from './note-view.js';
 
 /**
  * @typedef {import('../types/types.js').Note} Note
+ */
+
+/**
+ * @typedef {import('../types/types.js').FolderCollection} FolderCollection
+ */
+
+/**
+ * @typedef {import('../types/types.js').Folder} Folder
  */
 
 /**
@@ -22,7 +31,80 @@ function parsePageUrlForId() {
     return parseFloat(id);
 }
 
-function handleClickOnNewNoteButton() { }
+/**
+ * @param {number} id 
+ */
+function renderNotesInFolder(id) {
+}
+
+/**
+ * @returns{Folder}
+ */
+function createAllNotesFolder() {
+    return { id: 0, name: "allNotesFolder", notesInFolder: [] }
+}
+
+/**
+ * @returns{FolderCollection}
+ *
+ * create a new folder collection obj with the key of the all notes folder only
+ */
+function createFolderCollection() {
+    const allNotesFolder = createAllNotesFolder()
+    const allNotesFolderId = allNotesFolder.id;
+    return { [allNotesFolderId]: allNotesFolder };
+}
+
+/**
+ * @param {FolderCollection} folderCollection
+ * @returns {boolean} 
+ */
+function saveFolderCollection(folderCollection) {
+    try {
+        localStorage.setItem("folderCollection", JSON.stringify(folderCollection));
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+
+    return true;
+}
+
+function handleClickOnNewNoteButton() {
+    const newNote = createNote()
+    const savedNote = saveNote(newNote);
+    if (savedNote === null) {
+        console.error("Failed to save note");
+        return;
+    }
+
+    const searchQuery = window.location.search;
+    const url = new URLSearchParams(searchQuery);
+    const folderId = url.get('id');
+    if (folderId === null) {
+        console.debug("No query param id, going to place in folder all notes");
+        const folderCollectionAsString = localStorage.getItem("folderCollection");
+        /**@type {FolderCollection}*/
+        let fc;
+
+        if (folderCollectionAsString === null) {
+            const initFolderCollection = createFolderCollection()
+            const ok = saveFolderCollection(initFolderCollection);
+
+            if (ok === false) {
+                console.error("Failed to save newly created folder collection to localStorage");
+                return;
+            }
+
+            initFolderCollection[0].notesInFolder.push(newNote.id);
+            fc = initFolderCollection;
+        } else {
+            fc = JSON.parse(folderCollectionAsString);
+        }
+        // working here pal im pretty sure now is when you save the folder collection
+
+    }
+}
 
 /**
  * @param {string} pathname 
@@ -100,7 +182,7 @@ function handleGetRequestFolder() {
             console.debug("Notes array after removal: ", folderNotes);
 
             break;
-        } 
+        }
 
         /**@type{Note}*/
         const note = JSON.parse(noteAsString)
