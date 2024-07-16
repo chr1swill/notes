@@ -1,6 +1,8 @@
 import { renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
+window.addEventListener('DOMContentLoaded', main);
+
 function main() {
     initDB()
         .then(function(v) {
@@ -26,15 +28,9 @@ function main() {
     if (path === '/all-folder/' || path === '/all-folders/index.html') {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "folder_list_container"
-        if (queriedId === null) {
-            // type of list (folder , notes), where to insert it into the dom, id of the data 
-            renderListOfLinksToDom(0, idOfFolderListContainer, 0);
-            return;
-        }
+       renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+    } 
 
-        renderListOfLinksToDom(0, idOfFolderListContainer, parseFloat(queriedId));
-        return;
-    }
 
     console.debug("Visited page with not hanlder set up: ", path);
     console.debug("Redirecting to /all-folders/");
@@ -42,4 +38,3 @@ function main() {
     return;
 }
 
-main();
