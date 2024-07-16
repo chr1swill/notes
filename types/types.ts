@@ -22,3 +22,8 @@ export type Folder = {
  *  @example the number used to index into the Folder will be its corresponsing id
  */
 export type FolderCollection = { [key: number]: Folder }
+
+export enum ListType {
+    NOTE = 0,
+    FOLDER = 1,
+}
