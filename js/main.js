@@ -1,7 +1,7 @@
 import { renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
-window.addEventListener('DOMContentLoaded', main);
+window.addEventListener('load', main);
 
 function main() {
     initDB()
@@ -19,16 +19,19 @@ function main() {
     const path = window.location.pathname;
     const search = window.location.search;
     const searchParams = new URLSearchParams(search)
+    debugger;
 
     if (path === '/' || path === '/index.html') {
         window.location.href = window.location.origin + '/all-folders/'
+        main();
         return;
     }
 
     if (path === '/all-folder/' || path === '/all-folders/index.html') {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "folder_list_container"
-       renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+        renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+        return;
     } 
 
 
