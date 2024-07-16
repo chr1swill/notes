@@ -19,15 +19,17 @@ function main() {
     const path = window.location.pathname;
     const search = window.location.search;
     const searchParams = new URLSearchParams(search)
-    debugger;
+    console.debug("reqpath: ", path);
+    console.debug("reqsearch: ", search);
 
     if (path === '/' || path === '/index.html') {
-        window.location.href = window.location.origin + '/all-folders/'
+        const allFoldersPath = window.location.origin + '/all-folders/';
+        window.location.href = allFoldersPath;
         main();
         return;
     }
 
-    if (path === '/all-folder/' || path === '/all-folders/index.html') {
+    if (path === '/all-folders/' || path === '/all-folders/index.html') {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "folder_list_container"
         renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
