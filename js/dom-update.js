@@ -15,7 +15,7 @@ import { getAllObjectsFromDBStore, getObjectFromDBStore } from "./storage.js";
 function createFragmentOfElementsForDom(listType, data) {
     const fragment = new DocumentFragment();
 
-    if (data === null) {
+    if (data === null || data.length === 0) {
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.textContent = "all notes";
@@ -132,23 +132,26 @@ export function renderListOfLinksToDom(listType, idOfDomElementToInsertResultTo,
             1: getAllObjectsFromDBStore("folders"),
         };
 
+        /**@type{DocumentFragment}*/
+        let fragment;
         jumpTable[listType]
             .then(function(data) {
-                const frament = createFragmentOfElementsForDom(listType, data);
-                return frament;
+                const dataArrayOrNull = data === null || data.length === 0 ? null : data;
+                fragment = createFragmentOfElementsForDom(listType, dataArrayOrNull);
+                return fragment;
             })
             .catch(function(e) {
                 console.error("No data to process: ", e);
 
-                const frament = createFragmentOfElementsForDom(listType, null);
-                return frament;
+                fragment = createFragmentOfElementsForDom(listType, null);
+                return fragment;
             })
-            //@ts-ignore
-            .finally(function(fragment) {
+            .finally(function() {
                 while (container.firstChild) {
                     container.removeChild(container.firstChild);
                 }
 
+                console.debug("the so called fragment: ", fragment);
                 container
                     .appendChild(fragment);
             });
@@ -159,21 +162,20 @@ export function renderListOfLinksToDom(listType, idOfDomElementToInsertResultTo,
             1: getObjectFromDBStore("folders", idOfDataToAccessFromStorage),
         }
 
+        /**@type{DocumentFragment}*/
+        let fragment;
         jumpTable[listType]
             .then(function(data) {
-                const dataArrayOrNull = data === null ? null : [data]
-                const frament = createFragmentOfElementsForDom(listType, dataArrayOrNull);
-                return frament;
+                const dataArrayOrNull = data === null ? null : [data];
+                fragment = createFragmentOfElementsForDom(listType, dataArrayOrNull);
+                return fragment;
             })
             .catch(function(e) {
                 console.error("No data to process: ", e);
-
-                const frament = createFragmentOfElementsForDom(listType, null);
-                return frament;
+                fragment = createFragmentOfElementsForDom(listType, null);
+                return fragment;
             })
-            //@ts-ignore
-            .finally(function(fragment) {
-                //@ts-ignore
+            .finally(function() {
                 while (container.firstChild) {
                     container.removeChild(container.firstChild);
                 }
