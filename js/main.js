@@ -35,6 +35,12 @@ function main() {
         return;
     } 
 
+    if (path === '/folder-view/' || path === '/folder-view/index.html') {
+        const queriedId = searchParams.get('id');
+        const idOfFolderListContainer = "note_list_container";
+        renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+        return;
+    }
 
     console.debug("Visited page with not hanlder set up: ", path);
     console.debug("Redirecting to /all-folders/");
