@@ -38,7 +38,7 @@ function main() {
     if (path === '/folder-view/' || path === '/folder-view/index.html') {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "note_list_container";
-        renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+        renderListOfLinksToDom(0, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
         return;
     }
 

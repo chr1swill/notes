@@ -16,13 +16,18 @@ function createFragmentOfElementsForDom(listType, data) {
     const fragment = new DocumentFragment();
 
     if (data === null || data.length === 0) {
+        if (listType === 0) {
+            fragment.textContent = "Folder is empty";
+            return fragment
+        }
+
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.textContent = "all notes";
+        a.textContent = "All Notes Folder";
 
         // to indicate need all list
-        a.setAttribute(`data-${listType === 0 ? 'note' : 'folder'}-id`, "0");
-        a.href = window.location.origin + `${listType === 0 ? '/note-view/' : '/folder-view/'}` + '?id=0';
+        a.setAttribute('data-folder-id', "0");
+        a.href = window.location.origin + '/folder-view/' + '?id=0';
 
         fragment
             .appendChild(li)
