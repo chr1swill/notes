@@ -25,7 +25,6 @@ function main() {
     if (path === '/' || path === '/index.html') {
         const allFoldersPath = window.location.origin + '/all-folders/';
         window.location.href = allFoldersPath;
-        main();
         return;
     }
 
