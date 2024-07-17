@@ -1,4 +1,4 @@
-import { renderListOfLinksToDom } from "./dom-update.js";
+import { handleClickOnCreateNewFolderButton, renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
 window.addEventListener('load', main);
@@ -32,6 +32,20 @@ function main() {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "folder_list_container"
         renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+
+        
+        const newFolderButton = /**@type { HTMLButtonElement | null } */
+            (document.getElementById("button_create_new_folder"));
+        if (newFolderButton === null) {
+            console.error("Could not find element with id: #button_create_new_folder");
+            return;
+        }
+
+        newFolderButton.onclick = function () {
+            handleClickOnCreateNewFolderButton(idOfFolderListContainer);
+            return;
+        };
+
         return;
     } 
 

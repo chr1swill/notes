@@ -147,3 +147,58 @@ export function getAllObjectsFromDBStore(objectStoreName) {
     });
 };
 
+/**
+ * @param {0|1} objectStoreType - NOTES(0) or FOLDERS(1) will be used to determine the location to store object
+ * @param {Note|Folder} objectToSave 
+ * @returns {Promise<1 | DOMException>} - 1 if sucessful and error if one occurs
+ */
+export function saveObjectToDB(objectStoreType, objectToSave) {
+    return new Promise(function(resolve, reject) {
+        const openRequest = window.indexedDB.open(DB_NAME, DB_VERSION);
+
+        openRequest.onerror = function () {
+            reject(openRequest.error);
+        };
+
+        openRequest.onsuccess = function () {
+            const db = openRequest.result;
+
+            const objectStoreTypeAsName = objectStoreType === 0 ? 'notes' : 'folders';
+
+            let transaction;
+            try {
+                transaction = db.transaction(objectStoreTypeAsName, 'readwrite', { durability: 'default' });
+            } catch (e) {
+                reject(e);
+                return;
+            };
+
+            transaction.onerror = function () {
+                reject(transaction.error);
+            };
+
+            transaction.oncomplete = function () {
+                console.debug("Transaction Complete");
+            };
+
+            const objectStore = transaction.objectStore(objectStoreTypeAsName);
+
+            let putObject;
+            try {
+                putObject = objectStore.put(objectToSave);
+            } catch (e) {
+                reject(e);
+                return;
+            };
+
+            putObject.onerror = function () {
+                reject(putObject.error);
+            };
+
+            putObject.onsuccess = function () {
+                console.debug("Successfully saved the object, returned result: ", putObject.result);
+                resolve(1);
+            }
+        };
+    });
+}

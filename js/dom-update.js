@@ -1,4 +1,5 @@
-import { getAllObjectsFromDBStore, getObjectFromDBStore } from "./storage.js";
+import { createNewFolder } from "./folder.js";
+import { getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "./storage.js";
 /**
  * @typedef {import('types.js').Folder} Folder
  */
@@ -114,8 +115,8 @@ function createFragmentOfElementsForDom(listType, data) {
 
 /**
  * @param {0|1} listType - a list of type NOTES(0) or FOLDERS(1) components
- * @param {number} [idOfDataToAccessFromStorage=0] - id is 0 there will render list all else will preform loopup in the 
  * @param {string} idOfDomElementToInsertResultTo - used to as the location for the insertion of the resulting list
+ * @param {number} [idOfDataToAccessFromStorage=0] - an id of 0 will result in all element of provided list type being render to provided container id
  * @returns {void}
  */
 export function renderListOfLinksToDom(listType, idOfDomElementToInsertResultTo, idOfDataToAccessFromStorage = 0) {
@@ -189,4 +190,31 @@ export function renderListOfLinksToDom(listType, idOfDomElementToInsertResultTo,
                     .appendChild(fragment);
             });
     }
+}
+
+/**
+ * @param {string} idOfDomContainerToInsertReRender - a fragement containing all the list will be appended to this element
+ */
+export function handleClickOnCreateNewFolderButton(idOfDomContainerToInsertReRender) {
+    const folder = createNewFolder();
+
+    /**@type{string | null}*/
+    let prompt = null;
+    while (prompt === null || prompt?.trim()?.length < 1 || prompt?.trim()?.length > 125) {
+        prompt = window.prompt("What would you like to name the folder?");
+    }
+
+    folder.name = prompt.trim();
+    console.debug("Choosen name for folder: ", folder.name);
+
+    saveObjectToDB(1, folder)
+    .then(function(result) {
+        console.assert(result === 1, "Function did not fail but return an unexpected result: ", result);
+        renderListOfLinksToDom(1, idOfDomContainerToInsertReRender, 0)
+    })
+    .catch(function(e) {
+        console.error(e);
+        // TODO function showErrorToUser('Failed to create a new folder') + some actionable or useful information
+        return;
+    });
 }
