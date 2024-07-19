@@ -5,6 +5,7 @@
 export type Note = {
     id: number,
     body: string,
+    folder: number,
 }
 
 /**
