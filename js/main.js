@@ -1,4 +1,4 @@
-import { handleClickOnCreateNewFolderButton, handleClickOnCreateNewNoteButton, renderListOfLinksToDom } from "./dom-update.js";
+import { handleClickOnCreateNewFolderButton, handleClickOnCreateNewNoteButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
 window.addEventListener('load', main);
@@ -77,6 +77,7 @@ function main() {
             return;
         }
 
+        openInNoteView(parseFloat(queriedId))
         return;
     }
 

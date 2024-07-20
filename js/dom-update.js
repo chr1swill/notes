@@ -239,6 +239,13 @@ export function openInNoteView(noteId) {
 
             const note = /**@type{Note}*/(result);
             textarea.value = note.body;
+
+            const backLinkToFolderView = /**@type{HTMLAnchorElement | null}*/(document.getElementById("button_back_to_folder_view"));
+            if (backLinkToFolderView === null) {
+                throw new ReferenceError("Could not find elemen with id: #button_back_to_folder_view");
+            }
+
+            backLinkToFolderView.href = window.location.origin + `/folder-view/?id=${note.folder}`;
         })
         .catch(function(err) {
             console.error(err);
