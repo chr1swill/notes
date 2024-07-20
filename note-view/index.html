@@ -5,20 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Notes View</title>
     <link rel="stylesheet" href="/styles.css">
-    <script async src="/js/main.js"></script>
+    <script async type="module" src="/js/main.js"></script>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
 </head>
 <body>
-    <form action="" id="form">
-        <fieldset>
-            <button id="button_new_note" type="submit">New Note &#43</button>
-            <button id="button_save" type="submit">Save</button>
-        </fieldset>
-        <fieldset>
-            <label class="hidden" for="note_body">Input the body content of your note.</label>
-            <textarea id="note_body" name="note_body" spellcheck ></textarea>
-        </fieldset>
-    </form>
+    <nav>
+        <a id="button_back" href="" class="button">&larr; Back</a>
+        <button id="button_save" type="submit">Save</button>
+    </nav>
+    <section>
+        <label class="hidden" for="note_body">Input the body content of your note.</label>
+        <textarea id="note_body" name="note_body" spellcheck ></textarea>
+    </section>
 </body>
 </html>

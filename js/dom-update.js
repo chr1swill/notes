@@ -1,5 +1,7 @@
 import { createNewFolder } from "./folder.js";
+import { createNewNote } from "./notes.js";
 import { getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "./storage.js";
+
 /**
  * @typedef {import('types.js').Folder} Folder
  */
@@ -9,7 +11,7 @@ import { getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "
  */
 
 /**
- * @param {0|1} listType - a list of type NOTES(0) or FOLDERS(1) components
+ * @param { 0 | 1 } listType - a list of type NOTES(0) or FOLDERS(1) components
  * @param {Array<Folder | Note > | null } data
  * @returns {DocumentFragment}
  */
@@ -208,13 +210,126 @@ export function handleClickOnCreateNewFolderButton(idOfDomContainerToInsertReRen
     console.debug("Choosen name for folder: ", folder.name);
 
     saveObjectToDB(1, folder)
-    .then(function(result) {
-        console.assert(result === 1, "Function did not fail but return an unexpected result: ", result);
-        renderListOfLinksToDom(1, idOfDomContainerToInsertReRender, 0)
-    })
-    .catch(function(e) {
-        console.error(e);
-        // TODO function showErrorToUser('Failed to create a new folder') + some actionable or useful information
+        .then(function(result) {
+            console.assert(result === 1, "Function did not fail but return an unexpected result: ", result);
+            renderListOfLinksToDom(1, idOfDomContainerToInsertReRender, 0)
+        })
+        .catch(function(e) {
+            console.error(e);
+            // TODO function showErrorToUser('Failed to create a new folder') + some actionable or useful information
+            return;
+        });
+}
+
+/**
+ * @param {number} noteId - the id of the note you would like to open up on the page
+ * @returns{void}
+ */
+export function openInNoteView(noteId) {
+    getObjectFromDBStore('notes', noteId)
+        .then(function(result) {
+            if (result === null) {
+                throw new ReferenceError(`Could not access any notes in db with the provided id: ${noteId}`);
+            }
+
+            const textarea = /**@type{HTMLTextAreaElement | null}*/(document.getElementById('note_body'));
+            if (textarea === null) {
+                throw new ReferenceError("Could not find elemen with id: #note_body");
+            }
+
+            const note = /**@type{Note}*/(result);
+            textarea.value = note.body;
+        })
+        .catch(function(err) {
+            console.error(err);
+        });
+}
+
+/**
+ * @param {string} idOfDomContainerToInsertReRenderListOfElementsInto
+ */
+export function handleClickOnCreateNewNoteButton(idOfDomContainerToInsertReRenderListOfElementsInto) {
+    const note = createNewNote();
+
+    const urlSearchParams = window.location.search
+    const url = new URLSearchParams(urlSearchParams)
+    const folderIdThatCreatedNote = url.get('id');
+
+    // save to db when needed;
+    // prevent async bs form doing stuff of order
+    const saveToDB = function() {
+        saveObjectToDB(0, note)
+            .then(function(result) {
+                console.assert(result === 1, "Function did not fail but returned an unexpected result: ", result);
+                renderListOfLinksToDom(0, idOfDomContainerToInsertReRenderListOfElementsInto, 0)
+
+                window.location.href = window.location.origin + `/note-view/?id=${note.id}`;
+                return;
+            })
+            .catch(function(e) {
+                console.error(e);
+                // TODO function showErrorToUser('Failed to create a new note') + some actionable or useful information
+                return;
+            });
+    };
+
+    if (
+        folderIdThatCreatedNote === null ||
+        folderIdThatCreatedNote.trim() === "" ||
+        isNaN(parseFloat(folderIdThatCreatedNote)) ||
+        !isFinite(parseFloat(folderIdThatCreatedNote))
+    ) {
+        console.assert(note.folder === 0, "The note folder property was initized to an unexpected value: ", note.folder);
+        console.debug("No updated are needed to be made to the folder property of the note");
+        note.folder = 0;
+
+        saveToDB();
         return;
-    });
+    }
+
+    const parsedIdAsNumber = parseFloat(folderIdThatCreatedNote);
+    // check that this folder id if valid, it is already a folder id in the db
+    getObjectFromDBStore('folders', parsedIdAsNumber)
+        .then(function(data) {
+            if (data === null) {
+                console.warn("Provided id was not a valid id in the db, will not add note to any folders");
+                return null;
+            }
+
+            const folder = /**@type{Folder}*/(data);
+            if (!folder.notesInFolder.includes(note.id)) {
+                folder.notesInFolder.push(note.id);
+                saveObjectToDB(1, folder)
+                    .then(function(result) {
+                        if (result !== 1) {
+                            throw Error("An unexpected error occured");
+                        }
+
+                        return;
+                    })
+                    .catch(function(err) {
+                        console.error(err);
+                        return null;
+                    });
+            }
+        })
+        .then(function(result) {
+            if (result === null) {
+                throw ReferenceError("The provided search param was not a valid folder")
+            } else {
+                console.debug("Folder was a valid folder in the db");
+                return;
+            }
+        })
+        .catch(function(err) {
+            console.error(err);
+            console.debug("An error occured in the process of accessing the folder matching id of note, updated it to note belong to any folders");
+            note.folder = 0;
+        })
+        .finally(() => {
+            console.assert(typeof note.folder === 'number', "Some how the folder id is note a number: ", note.folder);
+            saveToDB()
+        });
+
+    return;
 }

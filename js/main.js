@@ -1,4 +1,4 @@
-import { handleClickOnCreateNewFolderButton, renderListOfLinksToDom } from "./dom-update.js";
+import { handleClickOnCreateNewFolderButton, handleClickOnCreateNewNoteButton, renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
 window.addEventListener('load', main);
@@ -53,6 +53,30 @@ function main() {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "note_list_container";
         renderListOfLinksToDom(0, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+
+        const newNoteButton = document.getElementById('button_create_new_note');
+        if (newNoteButton === null) {
+            console.error("Could not find element with id: #button_create_new_note");
+            return;
+        }
+
+        newNoteButton.onclick = function() {
+            handleClickOnCreateNewNoteButton(idOfFolderListContainer);
+            return;
+        }
+
+        return;
+    }
+
+    if (path === '/note-view/' || path === '/note-view/index.html') {
+        const queriedId = searchParams.get('id');
+        if (queriedId === null || queriedId.trim() === "") {
+            console.debug("Could not render without a id param to the note you would like to open");
+            window.location.href = window.location.origin + '/folder-view/';
+            console.debug("Redirected back to /folder-view/");
+            return;
+        }
+
         return;
     }
 

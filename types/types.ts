@@ -1,6 +1,7 @@
 /**
 * @property {string} id - generated id of note
 * @property {string} body - the text the is contained in a note
+* @property {string} folder - the folder the note belongs to
 */
 export type Note = {
     id: number,

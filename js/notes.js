@@ -6,14 +6,8 @@ import { generateUniqueId } from "./utils.js";
 
 /**
  * @returns {Note}
+ * - initized to folder 0 which is the all folder Folder
  */
-function createNote() {
-    return { id: generateUniqueId(), body: "" }; 
-}
-
-/**
- * @param {number} id
- * @return {Note | null} 
- */
-function updateNote(id) {
+export function createNewNote() {
+    return { id: generateUniqueId(), body: "", folder: 0 }; 
 }
