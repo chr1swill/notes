@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Folder View</title>
     <link rel="stylesheet" href="/styles.css">
-    <script defer type="module" src="/js/folder-view.js"></script>
+    <script async type="module" src="/js/main.js"></script>
 </head>
 <body>
-    <nav>
+    <nav class="top_nav">
+        <form action="/all-folders?id=0" method="get">
+            <button type="submit">&larr;Back</button>
+        </form>
+        <h1>Notes</h1>
         <button id="button_create_new_note">New Note</button>
     </nav>
     <section>
