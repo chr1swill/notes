@@ -1,4 +1,4 @@
-import { handleClickOnCreateNewFolderButton, handleClickOnCreateNewNoteButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
+import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { initDB } from "./storage.js";
 
 window.addEventListener('load', main);
@@ -61,23 +61,30 @@ function main() {
         }
 
         newNoteButton.onclick = function() {
-            handleClickOnCreateNewNoteButton(idOfFolderListContainer);
-            return;
-        }
+            if (queriedId === null) {
+                console.debug("query was null");
+                // create note in all notes folder only
+                window.location.href = window.location.origin + '/note-view/?folder=0';
+                return;
+            } else {
+                console.debug("query NOT was null");
+                // it is requried that the tenary is wrapped in bracked or odd error occurs
+                const newLocation = window.location.origin + '/note-view/?folder=' + (isNaN(parseFloat(queriedId)) && isFinite(parseFloat(queriedId)) ? queriedId : "0");
+                console.debug("newLocation url: ", newLocation);
+                window.location.href = newLocation;
+                console.assert(window.location.pathname === '/note-view/', "There was an error in assembling the new note page url");
+                return;
+            };
+        };
 
         return;
     }
 
     if (path === '/note-view/' || path === '/note-view/index.html') {
-        const queriedId = searchParams.get('id');
-        if (queriedId === null || queriedId.trim() === "") {
-            console.debug("Could not render without a id param to the note you would like to open");
-            window.location.href = window.location.origin + '/folder-view/';
-            console.debug("Redirected back to /folder-view/");
-            return;
-        }
+        const noteId = searchParams.get('id');
+        const folderId = searchParams.get('folder');
 
-        openInNoteView(parseFloat(queriedId))
+        openInNoteView(noteId, folderId)
         return;
     }
 

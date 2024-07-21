@@ -22,21 +22,21 @@ function createFragmentOfElementsForDom(listType, data) {
         if (listType === 0) {
             fragment.textContent = "Folder is empty";
             return fragment
+        } else {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.textContent = "All Notes Folder";
+
+            // to indicate need all list
+            a.setAttribute('data-folder-id', "0");
+            a.href = window.location.origin + '/folder-view/' + '?id=0';
+
+            fragment
+                .appendChild(li)
+                .appendChild(a)
+
+            return fragment;
         }
-
-        const li = document.createElement('li');
-        const a = document.createElement('a');
-        a.textContent = "All Notes Folder";
-
-        // to indicate need all list
-        a.setAttribute('data-folder-id', "0");
-        a.href = window.location.origin + '/folder-view/' + '?id=0';
-
-        fragment
-            .appendChild(li)
-            .appendChild(a)
-
-        return fragment;
     }
 
     if (listType === 0) {
@@ -74,7 +74,7 @@ function createFragmentOfElementsForDom(listType, data) {
 
             a.textContent = noteTitle;
             a.setAttribute('data-note-id', note.id.toString());
-            a.href = window.location.origin + '/note-view/' + `?id=${note.id}`;
+            a.href = window.location.origin + '/note-view/' + `?id=${note.id}` + `&folder=${note.folder}`;
 
             fragment
                 .appendChild(li)
@@ -83,6 +83,7 @@ function createFragmentOfElementsForDom(listType, data) {
             i++;
         }
 
+        // possibley can be remvoed bc now we only save a note if the note has content
         if (notesToRemoveFromDB.length < 0) {
             const result = deleteNotes(notesToRemoveFromDB)
 
@@ -248,121 +249,84 @@ export function handleClickOnCreateNewFolderButton(idOfDomContainerToInsertReRen
 }
 
 /**
- * @param {number} noteId - the id of the note you would like to open up on the page
- * @returns{void}
+ * @param{HTMLTextAreaElement} textarea
+ * @param{number} folderId
+ * @param {string} [noteId=""] 
+ * @param {string} [noteText=""] - note text data of null
  */
-export function openInNoteView(noteId) {
-    getObjectFromDBStore('notes', noteId)
-        .then(function(result) {
-            if (result === null) {
-                throw new ReferenceError(`Could not access any notes in db with the provided id: ${noteId}`);
-            }
-
-            const textarea = /**@type{HTMLTextAreaElement | null}*/(document.getElementById('note_body'));
-            if (textarea === null) {
-                throw new ReferenceError("Could not find elemen with id: #note_body");
-            }
-
-            const note = /**@type{Note}*/(result);
-            textarea.value = note.body;
-
-            const backLinkToFolderView = /**@type{HTMLAnchorElement | null}*/(document.getElementById("button_back_to_folder_view"));
-            if (backLinkToFolderView === null) {
-                throw new ReferenceError("Could not find elemen with id: #button_back_to_folder_view");
-            }
-
-            backLinkToFolderView.href = window.location.origin + `/folder-view/?id=${note.folder}`;
-        })
-        .catch(function(err) {
-            console.error(err);
-        });
+function renderNoteUpdates(textarea, folderId, noteId="",  noteText="") {
+    textarea.textContent = noteText;
+    // no note has been saved so it has no id until then
+    textarea.setAttribute('data-note-id', noteId);
+    textarea.setAttribute('data-folder-id', folderId.toString());
 }
 
 /**
- * @param {string} idOfDomContainerToInsertReRenderListOfElementsInto
+ * @param{number | null} noteId - the note would like to use as the data for you component
+ * @param{number} folderId - the id of the folder the note will belong to 
+ * @returns{void}
  */
-export function handleClickOnCreateNewNoteButton(idOfDomContainerToInsertReRenderListOfElementsInto) {
-    const note = createNewNote();
-
-    const urlSearchParams = window.location.search
-    const url = new URLSearchParams(urlSearchParams)
-    const folderIdThatCreatedNote = url.get('id');
-
-    // save to db when needed;
-    // prevent async bs form doing stuff of order
-    const saveToDB = function() {
-        saveObjectToDB(0, note)
-            .then(function(result) {
-                console.assert(result === 1, "Function did not fail but returned an unexpected result: ", result);
-                renderListOfLinksToDom(0, idOfDomContainerToInsertReRenderListOfElementsInto, 0)
-
-                window.location.href = window.location.origin + `/note-view/?id=${note.id}`;
-                return;
-            })
-            .catch(function(e) {
-                console.error(e);
-                // TODO function showErrorToUser('Failed to create a new note') + some actionable or useful information
-                return;
-            });
+function updateNoteComponent(noteId, folderId) {
+    const textarea = /**@type {HTMLTextAreaElement | null} */
+        (document.getElementById('note_body'));
+    if (textarea === null) {
+        console.error("Could not find element with id: note_body");
+        return;
     };
 
-    if (
-        folderIdThatCreatedNote === null ||
-        folderIdThatCreatedNote.trim() === "" ||
-        isNaN(parseFloat(folderIdThatCreatedNote)) ||
-        !isFinite(parseFloat(folderIdThatCreatedNote))
-    ) {
-        console.assert(note.folder === 0, "The note folder property was initized to an unexpected value: ", note.folder);
-        console.debug("No updated are needed to be made to the folder property of the note");
-        note.folder = 0;
-
-        saveToDB();
-        return;
-    }
-
-    const parsedIdAsNumber = parseFloat(folderIdThatCreatedNote);
-    // check that this folder id if valid, it is already a folder id in the db
-    getObjectFromDBStore('folders', parsedIdAsNumber)
-        .then(function(data) {
-            if (data === null) {
-                console.warn("Provided id was not a valid id in the db, will not add note to any folders");
-                return null;
-            }
-
-            const folder = /**@type{Folder}*/(data);
-            if (!folder.notesInFolder.includes(note.id)) {
-                folder.notesInFolder.push(note.id);
-                saveObjectToDB(1, folder)
-                    .then(function(result) {
-                        if (result !== 1) {
-                            throw Error("An unexpected error occured");
-                        }
-
-                        return;
-                    })
-                    .catch(function(err) {
-                        console.error(err);
-                        return null;
-                    });
-            }
-        })
+    if (noteId === null) {
+        renderNoteUpdates(textarea, folderId)
+    } else {
+        getObjectFromDBStore('notes', noteId)
         .then(function(result) {
             if (result === null) {
-                throw ReferenceError("The provided search param was not a valid folder")
+                throw new ReferenceError(`There was not data in the notes object store matching provied id: ${noteId}`);
+            };
+            
+            if ('body' in result && 'id' in result) {
+                renderNoteUpdates(textarea, folderId, result.id.toString(), result.body);
             } else {
-                console.debug("Folder was a valid folder in the db");
-                return;
-            }
+                throw new TypeError(`The data accessed from the database did note contain a valid note id: ${noteId}`);
+            };
+
         })
         .catch(function(err) {
             console.error(err);
-            console.debug("An error occured in the process of accessing the folder matching id of note, updated it to note belong to any folders");
-            note.folder = 0;
-        })
-        .finally(() => {
-            console.assert(typeof note.folder === 'number', "Some how the folder id is note a number: ", note.folder);
-            saveToDB()
+            renderNoteUpdates(textarea, folderId);
         });
+    };
+}
 
+/**
+ * @param{number} folderId 
+ * @returns{void}
+ */
+function updateBackToLastFolderViewLink(folderId) {
+    const link = /**@type{ HTMLAnchorElement | null }*/
+        (document.getElementById('button_back_to_folder_view'));
+    if (link === null) {
+        console.error("Could not find element with id: #button_back_to_folder_view");
+        return;
+    };
+
+    link.href = window.location.origin + (folderId === 0 ? `/all-folders/` : `/folder-view?id=${folderId}`);
+}
+
+/**
+ * @param {string | null} noteIdSearchParam - the id of the note you would like to open up on the page
+ * @param {string | null} folderIdSearchParam - the id of the note you would like to open up on the page
+ * @returns{void}
+ */
+export function openInNoteView(noteIdSearchParam, folderIdSearchParam) {
+    const noteId = 
+        isNaN(parseFloat(noteIdSearchParam || "")) && 
+        isFinite(parseFloat(noteIdSearchParam || "")) ? parseFloat(/**@type{string}*/(noteIdSearchParam)) : null;
+
+    const folderId = 
+        isNaN(parseFloat(folderIdSearchParam || "")) &&
+        isFinite(parseFloat(folderIdSearchParam || "")) ? parseFloat(/**@type{string}*/(folderIdSearchParam)) : 0;
+
+    updateNoteComponent(noteId, folderId);
+    updateBackToLastFolderViewLink(folderId);
     return;
 }
