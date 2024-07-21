@@ -1,6 +1,6 @@
 import { createNewFolder } from "./folder.js";
 import { createNewNote } from "./notes.js";
-import { getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "./storage.js";
+import { deleteNotes, getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "./storage.js";
 
 /**
  * @typedef {import('types.js').Folder} Folder
@@ -42,9 +42,17 @@ function createFragmentOfElementsForDom(listType, data) {
     if (listType === 0) {
         const noteArray = /**@type {Array<Note>} */(data);
 
+        /**@type{Array<Note>}*/
+        const notesToRemoveFromDB = [];
+
         let i = 0;
         while (i < noteArray.length) {
             const note = noteArray[i];
+            if (note.body.trim().length === 0) {
+                // if the note has no saved contnet you should not render it as pop it from the list so it is note saved.
+                notesToRemoveFromDB.push(note);
+                continue;
+            }
 
             const li = document.createElement('li');
             const a = document.createElement('a');
@@ -74,6 +82,24 @@ function createFragmentOfElementsForDom(listType, data) {
 
             i++;
         }
+
+        if (notesToRemoveFromDB.length < 0) {
+            const result = deleteNotes(notesToRemoveFromDB)
+
+            console.assert(result !== null, "Input to the delete notes function contianed no elements");
+            if (result === null) {
+
+                console.warn("Array provided as input container no notes")
+
+            } else {
+
+                // possble oppertunrity to retry delete of bad errored indices
+                if (result.includes(0)) 
+                    console.debug("Result array container error that occured while trying to delete notes, indicated by indecies of value 0: ", result);
+
+            };
+
+        };
 
     } else {
         const folderArray = /**@type {Array<Folder>} */(data);
