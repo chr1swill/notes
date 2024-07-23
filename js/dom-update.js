@@ -309,7 +309,8 @@ function updateBackToLastFolderViewLink(folderId) {
         return;
     };
 
-    link.href = window.location.origin + (folderId === 0 ? `/all-folders/` : `/folder-view?id=${folderId}`);
+    link.href = window.location.origin + (folderId === 0 ? '/folder-view?id=0' : '/folder-view?id=' + folderId);
+    console.debug("updated link href on note-view page: ", link.href);
 }
 
 /**
