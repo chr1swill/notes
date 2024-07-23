@@ -141,9 +141,11 @@ function main() {
                 textarea.setAttribute('data-folder-id', folderId.toString());
             };
 
-            const windowLocation = window.origin + '/note-view/' + `?id=${note.id}&folder=${note.folder}`;
+            // if we are already on the page the really is no point in opening up after we should use a reload to test it worked
+            // the problem is a am blocking the route but i dont think i can proply filling the data on reload
+            // const windowLocation = window.origin + '/note-view/' + `?id=${note.id}&folder=${note.folder}`;
             saveObjectToDB(0, note)
-            window.location.href = windowLocation;
+            //window.location.href = windowLocation;
 
             return;
         };

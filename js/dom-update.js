@@ -284,6 +284,7 @@ function updateNoteComponent(noteId, folderId) {
             
             if ('body' in result && 'id' in result) {
                 renderNoteUpdates(textarea, folderId, result.id.toString(), result.body);
+                console.debug("note text: ", result.body);
             } else {
                 throw new TypeError(`The data accessed from the database did note contain a valid note id: ${noteId}`);
             };
@@ -317,13 +318,11 @@ function updateBackToLastFolderViewLink(folderId) {
  * @returns{void}
  */
 export function openInNoteView(noteIdSearchParam, folderIdSearchParam) {
-    const noteId = 
-        isNaN(parseFloat(noteIdSearchParam || "")) && 
-        isFinite(parseFloat(noteIdSearchParam || "")) ? parseFloat(/**@type{string}*/(noteIdSearchParam)) : null;
+    const noteId = (!isNaN(parseFloat(noteIdSearchParam || "")) && isFinite(parseFloat(noteIdSearchParam || ""))) ? parseFloat(/**@type{string}*/(noteIdSearchParam)) : null;
+    console.debug("var noteId from inside openInNoteView: ", noteId);
 
-    const folderId = 
-        isNaN(parseFloat(folderIdSearchParam || "")) &&
-        isFinite(parseFloat(folderIdSearchParam || "")) ? parseFloat(/**@type{string}*/(folderIdSearchParam)) : 0;
+    const folderId = (!isNaN(parseFloat(folderIdSearchParam || "")) && isFinite(parseFloat(folderIdSearchParam || ""))) ? parseFloat(/**@type{string}*/(folderIdSearchParam)) : 0;
+    console.debug("var folderId from inside openInNoteView: ", folderId);
 
     updateNoteComponent(noteId, folderId);
     updateBackToLastFolderViewLink(folderId);
