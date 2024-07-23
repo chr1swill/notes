@@ -136,6 +136,17 @@ function createFragmentOfElementsForDom(listType, data) {
 
             i++;
         }
+
+        // ensure you can alway visit all notes folder
+        // 
+        const allNotesFolderLi = document.createElement('li');
+        const allNotesFolderA = document.createElement('a');
+        allNotesFolderA.textContent = "All Notes Folder";
+
+        allNotesFolderA.setAttribute('data-folder-id', "0");
+        allNotesFolderA.href = window.location.origin + '/folder-view/' + '?id=0';
+
+        fragment.prepend(allNotesFolderLi.appendChild(allNotesFolderA));
     }
 
     return fragment;
