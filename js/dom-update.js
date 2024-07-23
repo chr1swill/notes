@@ -227,8 +227,9 @@ export function handleClickOnCreateNewFolderButton(idOfDomContainerToInsertReRen
     const folder = createNewFolder();
 
     /**@type{string | null}*/
-    let prompt = null;
+    let prompt = "";
     while (prompt === null || prompt?.trim()?.length < 1 || prompt?.trim()?.length > 125) {
+        if (prompt === null) return;
         prompt = window.prompt("What would you like to name the folder?");
     }
 
