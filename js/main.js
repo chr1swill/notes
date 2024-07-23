@@ -92,23 +92,20 @@ function main() {
 		return;
 	}
 
-	    saveNoteButton.onclick = function() {
-		    const textarea = document.getElementById('note_body');
-		    if (textarea === null) {
-			    console.error('Could not find element with id: #note_body');
-		            return;
-		    };
+    saveNoteButton.onclick = function() {
+        const textarea = document.getElementById('note_body');
+        if (textarea === null) {
+            console.error('Could not find element with id: #note_body');
+            return;
+        };
 
-		    const noteData = textarea.value || "";
-
-		    // implement how you will get the note id i know i put it somewhere like 
-		    // on the data attibute or in the query params you got options pal
-		    // do more programing like this with raw vim i accully sort of like it
-
-		    saveNote(noteId, noteData);
-	    };
+        const noteData = textarea.value || "";
+        saveNote(noteId, noteData);
 
         return;
+    };
+
+    return;
     }
 
     console.debug("Visited page with not hanlder set up: ", path);
@@ -116,4 +113,3 @@ function main() {
     window.location.href = window.location.origin + '/all-folders/'
     return;
 }
-
