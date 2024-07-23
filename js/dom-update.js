@@ -1,5 +1,4 @@
 import { createNewFolder } from "./folder.js";
-import { createNewNote } from "./notes.js";
 import { deleteNotes, getAllObjectsFromDBStore, getObjectFromDBStore, saveObjectToDB } from "./storage.js";
 
 /**

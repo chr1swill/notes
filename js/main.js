@@ -1,5 +1,10 @@
 import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
-import { initDB } from "./storage.js";
+import { createNewNote } from "./notes.js";
+import { initDB, saveObjectToDB } from "./storage.js";
+
+/**
+ * @typedef{import('types.js').Note} Note
+ */
 
 window.addEventListener('load', main);
 
@@ -86,26 +91,64 @@ function main() {
 
         openInNoteView(noteId, folderId)
 
-	const saveNoteButton = document.getElementById('button_save');
-	if (saveNoteButton === null) {
-		console.error('Could not find element with id: #button_save');
-		return;
-	}
+        const saveNoteButton = document.getElementById('button_save');
+        if (saveNoteButton === null) {
+            console.error('Could not find element with id: #button_save');
+            return;
+        }
 
-    saveNoteButton.onclick = function() {
-        const textarea = document.getElementById('note_body');
-        if (textarea === null) {
-            console.error('Could not find element with id: #note_body');
+        saveNoteButton.onclick = function() {
+            const textarea = /**@type{HTMLTextAreaElement | null}*/(document.getElementById('note_body'));
+            if (textarea === null) {
+                console.error('Could not find element with id: #note_body');
+                return;
+            };
+
+            const noteBody = textarea.value || "";
+
+            const searchQuery = new URLSearchParams(window.location.search)
+            const noteId = searchQuery.get('id');
+
+            /**@type{number}*/
+            let folderId;
+            const folderParam = searchQuery.get('folder');
+            if (
+                folderParam === null || 
+                isNaN(parseFloat(folderParam)) || 
+                !isFinite(parseFloat(folderParam))
+            ) {
+                folderId = 0;
+            } else {
+                folderId = parseFloat(folderParam);
+            };
+
+            /**@type{Note}*/
+            let note = createNewNote();
+            if (noteId === null ||
+                isNaN(parseFloat(noteId)) ||
+                !isFinite(parseFloat(noteId)) ) {
+                // asseble a new note
+                
+                note.folder = folderId;
+                note.body = noteBody;
+                textarea.setAttribute('data-note-id', note.id.toString());
+                textarea.setAttribute('data-folder-id', folderId.toString());
+            } else {
+                note.id = parseFloat(noteId);
+                note.folder = folderId;
+                note.body = noteBody;
+                textarea.setAttribute('data-note-id', note.id.toString());
+                textarea.setAttribute('data-folder-id', folderId.toString());
+            };
+
+            const windowLocation = window.origin + '/note-view/' + `?id=${note.id}&folder=${note.folder}`;
+            saveObjectToDB(0, note)
+            window.location.href = windowLocation;
+
             return;
         };
 
-        const noteData = textarea.value || "";
-        saveNote(noteId, noteData);
-
         return;
-    };
-
-    return;
     }
 
     console.debug("Visited page with not hanlder set up: ", path);
