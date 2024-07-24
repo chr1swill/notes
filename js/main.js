@@ -127,7 +127,7 @@ function main() {
             if (noteId === null ||
                 isNaN(parseFloat(noteId)) ||
                 !isFinite(parseFloat(noteId)) ) {
-                // asseble a new note
+                // assemble a new note
                 
                 note.folder = folderId;
                 note.body = noteBody;
