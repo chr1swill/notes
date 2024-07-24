@@ -1,6 +1,6 @@
 import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { createNewNote } from "./notes.js";
-import { initDB, saveObjectToDB } from "./storage.js";
+import { initDB, pushIdIntoFoldersNoteArray, saveObjectToDB } from "./storage.js";
 
 /**
  * @typedef{import('types.js').Note} Note
@@ -122,6 +122,29 @@ function main() {
                 folderId = parseFloat(folderParam);
             };
 
+            //make a function to update the note folder array
+
+            /**
+             * @param{number} noteIdAsNumber
+             * @param{number} folderId
+             */
+            const addNoteIdToFolderArray  = function(noteIdAsNumber, folderId) {
+                if (folderId < 0 && !isNaN(noteIdAsNumber) && isFinite(noteIdAsNumber) && noteIdAsNumber < 0 ) {
+                    pushIdIntoFoldersNoteArray(folderId, noteIdAsNumber)
+                        .then(function(result) {
+                            if (result !== 1) {
+                                throw new Error('Failed to add new note to folders array of notes');
+                            } else {
+                                console.debug('Successfully added note id: ', noteIdAsNumber, ' to folder id: ', folderId, ' array of notes');
+                            };
+                        })
+                        .catch(function(err) {
+                            console.error(err);
+                            return;
+                        });
+                };
+            }
+
             /**@type{Note}*/
             let note = createNewNote();
             if (noteId === null ||
@@ -131,21 +154,31 @@ function main() {
                 
                 note.folder = folderId;
                 note.body = noteBody;
+
+                addNoteIdToFolderArray(note.id, folderId);
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
             } else {
                 note.id = parseFloat(noteId);
                 note.folder = folderId;
                 note.body = noteBody;
+
+                addNoteIdToFolderArray(note.id, folderId);
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
             };
 
-            // if we are already on the page the really is no point in opening up after we should use a reload to test it worked
-            // the problem is a am blocking the route but i dont think i can proply filling the data on reload
-            // const windowLocation = window.origin + '/note-view/' + `?id=${note.id}&folder=${note.folder}`;
             saveObjectToDB(0, note)
-            //window.location.href = windowLocation;
+            .then(function(result) {
+                if (result !== 1) {
+                    throw result;
+                } else {
+                    console.debug('Sucessfully saved note');
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+            });
 
             return;
         };

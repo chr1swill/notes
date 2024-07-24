@@ -325,3 +325,53 @@ export function deleteNotes(notesArray) {
         return null;
     };
 }
+
+/**
+ * @param{number} folderIdWithNotesIdArray - the id of the folder array which you would like to add the given notes id to 
+ * @param {number} noteIdToPut - the note id which you would like to add to the given folders array
+ * @returns{Promise<number>}
+ */
+export function pushIdIntoFoldersNoteArray(folderIdWithNotesIdArray, noteIdToPut) {
+    return getObjectFromDBStore('folders', folderIdWithNotesIdArray)
+    .then(function(result) {
+        if (result === null) {
+            throw new ReferenceError(`There was not an id in the folder objectStore matching the provided id: ${folderIdWithNotesIdArray}`);
+        } else if (!('id' in result) || !('name' in result) || !('notesInFolder' in result)) {
+            throw new TypeError(`The object accessed from the database was not a valid folder: ${result}`);
+        } else {
+            return result;
+        }
+    })
+    .then(function(folder) {
+        if (folder.notesInFolder.includes(noteIdToPut)) {
+            console.debug('The note id: ', noteIdToPut,  ' was already in the folder with id: ', folderIdWithNotesIdArray);
+            return 1;
+        } else {
+            folder.notesInFolder.push(noteIdToPut);
+
+            return saveObjectToDB(1, folder)
+            .then(function(result) {
+                if (result === 1) {
+                    return 1;
+                } else {
+                    throw result;
+                };
+            })
+            .catch(function(err) {
+                console.error(err);
+                return 0;
+            });
+        };
+    })
+    .then(function(errOrSuccess) {
+        if (errOrSuccess === 1) {
+            return 1;
+        } else {
+            throw new Error("Failed to save updated folder object to db");
+        };
+    })
+    .catch(function(err) {
+        console.error(err);
+        return 0;
+    });
+}
