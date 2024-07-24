@@ -78,7 +78,21 @@ button {
     font-size: 16px;
 }
 
-textarea {
+.top_nav {
+    width: 100%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.note_body_container {
+    width: 100%;
+    height: 100%;
+}
+
+.note_body {
     width: 100%;
     height: 100%;
     background-color: var(--background);
@@ -93,13 +107,4 @@ textarea {
         border: none;
         outline: none;
     }
-}
-
-.top_nav {
-    width: 100%;
-    height: auto;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: center;
 }
