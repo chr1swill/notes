@@ -327,51 +327,72 @@ export function deleteNotes(notesArray) {
 }
 
 /**
+ * @async
+ *
  * @param{number} folderIdWithNotesIdArray - the id of the folder array which you would like to add the given notes id to 
  * @param {number} noteIdToPut - the note id which you would like to add to the given folders array
  * @returns{Promise<number>}
  */
-export function pushIdIntoFoldersNoteArray(folderIdWithNotesIdArray, noteIdToPut) {
-    return getObjectFromDBStore('folders', folderIdWithNotesIdArray)
-    .then(function(result) {
+export async function pushIdIntoFoldersNoteArray(folderIdWithNotesIdArray, noteIdToPut) {
+    try {
+        const result = await getObjectFromDBStore('folders', folderIdWithNotesIdArray);
         if (result === null) {
             throw new ReferenceError(`There was not an id in the folder objectStore matching the provided id: ${folderIdWithNotesIdArray}`);
         } else if (!('id' in result) || !('name' in result) || !('notesInFolder' in result)) {
             throw new TypeError(`The object accessed from the database was not a valid folder: ${result}`);
-        } else {
-            return result;
-        }
-    })
-    .then(function(folder) {
-        if (folder.notesInFolder.includes(noteIdToPut)) {
-            console.debug('The note id: ', noteIdToPut,  ' was already in the folder with id: ', folderIdWithNotesIdArray);
-            return 1;
-        } else {
-            folder.notesInFolder.push(noteIdToPut);
+        } 
 
-            return saveObjectToDB(1, folder)
-            .then(function(result) {
-                if (result === 1) {
-                    return 1;
-                } else {
-                    throw result;
-                };
-            })
-            .catch(function(err) {
-                console.error(err);
-                return 0;
-            });
-        };
-    })
-    .then(function(errOrSuccess) {
-        if (errOrSuccess === 1) {
+        const folder = result;
+        if (folder.notesInFolder.includes(noteIdToPut)) {
+            // no need to add the note id again to the folder
             return 1;
-        } else {
-            throw new Error("Failed to save updated folder object to db");
-        };
-    })
-    .catch(function(err) {
+        }
+
+        console.debug("Folder before adding note id", folder.notesInFolder);
+        folder.notesInFolder.push(noteIdToPut);
+        console.debug("Folder after adding note id", folder.notesInFolder);
+
+        const saveUpdatedFolderToDB = await saveObjectToDB(1, folder);
+        if (saveUpdatedFolderToDB !== 1) {
+            throw saveUpdatedFolderToDB;
+        } 
+
+        return 1;
+
+    } catch (err) {
         console.error(err);
         return 0;
-    });
+    }
 }
+
+/**
+ * @async
+ * @param{number} noteIdAsNumber
+ * @param{number} folderId
+ * @returns{Promise<number>} - zero if an error occurs, one if successful, negative one if input was invalid (hit else branch)
+ */
+export async function addNoteIdToFolderArray(noteIdAsNumber, folderId) {
+    if (folderId > 0 && !isNaN(noteIdAsNumber) && isFinite(noteIdAsNumber) && noteIdAsNumber > 0 ) {
+
+        try { 
+
+            const result = await pushIdIntoFoldersNoteArray(folderId, noteIdAsNumber);
+
+            if (result !== 1) {
+                throw new Error('Failed to add new note to folders array of notes');
+            } else {
+                console.debug('Successfully added note id: ', noteIdAsNumber, ' to folder id: ', folderId, ' array of notes');
+                return 1;
+            };
+
+        } catch (err) {
+            console.error(err);
+            return 0;
+        };
+
+    } else {
+        console.debug(`Did note run function, was provided inputs: noteIdAsNumber ${noteIdAsNumber}, folderId ${folderId}`);
+        return -1;
+    }
+}
+

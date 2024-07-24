@@ -1,6 +1,6 @@
 import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { createNewNote } from "./notes.js";
-import { initDB, pushIdIntoFoldersNoteArray, saveObjectToDB } from "./storage.js";
+import { addNoteIdToFolderArray, initDB, pushIdIntoFoldersNoteArray, saveObjectToDB } from "./storage.js";
 
 /**
  * @typedef{import('types.js').Note} Note
@@ -122,27 +122,7 @@ function main() {
                 folderId = parseFloat(folderParam);
             };
 
-            /**
-             * @param{number} noteIdAsNumber
-             * @param{number} folderId
-             */
-            const addNoteIdToFolderArray  = function(noteIdAsNumber, folderId) {
-                if (folderId < 0 && !isNaN(noteIdAsNumber) && isFinite(noteIdAsNumber) && noteIdAsNumber < 0 ) {
-                    pushIdIntoFoldersNoteArray(folderId, noteIdAsNumber)
-                        .then(function(result) {
-                            if (result !== 1) {
-                                throw new Error('Failed to add new note to folders array of notes');
-                            } else {
-                                console.debug('Successfully added note id: ', noteIdAsNumber, ' to folder id: ', folderId, ' array of notes');
-                            };
-                        })
-                        .catch(function(err) {
-                            console.error(err);
-                            return;
-                        });
-                };
-            }
-
+            debugger;
             /**@type{Note}*/
             let note = createNewNote();
             if (noteId === null ||
@@ -153,7 +133,27 @@ function main() {
                 note.folder = folderId;
                 note.body = noteBody;
 
-                addNoteIdToFolderArray(note.id, folderId);
+                addNoteIdToFolderArray(note.id, note.folder)
+                .then(function(result) {
+                    switch (true) {
+                        case result === 1:
+                            console.debug("Successfully added note id to the folders array of note ids")
+                            console.debug("folder id: ", note.folder);
+                            console.debug("note id added: ", note.id);
+                            break;
+                        case result === -1:
+                            console.warn("Provided input to function was not valid, was take");
+                            break;
+                        case result === 0:
+                            throw new Error("Failed to add note id to folder array an error occured in the process");
+                        default:
+                            throw new Error("Function returned an unexpected result with no handler set up for it");
+                    };
+                })
+                .catch(function(error) {
+                    console.error(error);
+                });
+
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
             } else {
@@ -161,7 +161,27 @@ function main() {
                 note.folder = folderId;
                 note.body = noteBody;
 
-                addNoteIdToFolderArray(note.id, folderId);
+                addNoteIdToFolderArray(note.id, note.folder)
+                .then(function(result) {
+                    switch (true) {
+                        case result === 1:
+                            console.debug("Successfully added note id to the folders array of note ids")
+                            console.debug("folder id: ", note.folder);
+                            console.debug("note id added: ", note.id);
+                            break;
+                        case result === -1:
+                            console.warn("Provided input to function was not valid, was take");
+                            break;
+                        case result === 0:
+                            throw new Error("Failed to add note id to folder array an error occured in the process");
+                        default:
+                            throw new Error("Function returned an unexpected result with no handler set up for it");
+                    };
+                })
+                .catch(function(error) {
+                    console.error(error);
+                });
+
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
             };
