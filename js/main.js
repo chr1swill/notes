@@ -122,8 +122,6 @@ function main() {
                 folderId = parseFloat(folderParam);
             };
 
-            //make a function to update the note folder array
-
             /**
              * @param{number} noteIdAsNumber
              * @param{number} folderId
