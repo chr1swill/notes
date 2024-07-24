@@ -122,7 +122,6 @@ function main() {
                 folderId = parseFloat(folderParam);
             };
 
-            debugger;
             /**@type{Note}*/
             let note = createNewNote();
             if (noteId === null ||
@@ -185,6 +184,13 @@ function main() {
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
             };
+
+            const macroTask = setTimeout(function() {
+                clearTimeout(macroTask);
+                const newLocation = window.origin + `/note-view/?id=${note.id}&folder=${note.folder}`;
+                console.debug("new location url: ", newLocation);
+                window.location.href = newLocation;
+            }, 0);
 
             saveObjectToDB(0, note)
             .then(function(result) {
