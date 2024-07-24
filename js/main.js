@@ -74,7 +74,7 @@ function main() {
             } else {
                 console.debug("query NOT was null");
                 // it is requried that the tenary is wrapped in bracked or odd error occurs
-                const newLocation = window.location.origin + '/note-view/?folder=' + (isNaN(parseFloat(queriedId)) && isFinite(parseFloat(queriedId)) ? queriedId : "0");
+                let newLocation = window.location.origin + '/note-view/?folder=' + ((!isNaN(parseFloat(queriedId)) && isFinite(parseFloat(queriedId))) ? queriedId : "0");
                 console.debug("newLocation url: ", newLocation);
                 window.location.href = newLocation;
                 console.assert(window.location.pathname === '/note-view/', "There was an error in assembling the new note page url");
