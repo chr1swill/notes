@@ -1,6 +1,6 @@
 import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { createNewNote } from "./notes.js";
-import { addNoteIdToFolderArray, initDB, pushIdIntoFoldersNoteArray, saveObjectToDB } from "./storage.js";
+import { addNoteIdToFolderArray, initDB, saveObjectToDB } from "./storage.js";
 
 /**
  * @typedef{import('types.js').Note} Note
