@@ -64,36 +64,6 @@ export function openDB() {
 };
 
 /**
- * @param {IDBDatabase} db 
- * @param {IDBTransactionMode} mode 
- * @param {"notes" | "folders"} storeName 
- * @returns {Promise< IDBTransaction | Error >}
- */
-function createTransaction(db, storeName, mode) {
-    return new Promise(function(resolve, reject) {
-        let transaction;
-
-        try {
-            transaction = db.transaction(storeName, mode, { durability: 'default' });
-        } catch (err) {
-            reject(err);
-            return;
-        };
-
-        transaction.onerror = function() {
-            reject(transaction.error);
-        };
-
-        transaction.oncomplete = function() {
-            resolve(transaction);
-        }
-
-        resolve(transaction);
-    });
-};
-
-
-/**
  * @typedef {Note | Folder} DBData
  */
 
@@ -103,14 +73,32 @@ function createTransaction(db, storeName, mode) {
  */
 
 /**
- * @param {IDBTransaction} transaction
+ * @param {IDBDatabase} db 
+ * @param {IDBTransactionMode} mode 
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
  * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise<DBData | Error> }
  */
-function readData(transaction, storeName, key, callback) {
+export function readData(db, mode, storeName, key, callback) {
     return new Promise(function(resolve, reject) {
+
+        let transaction;
+        try {
+            transaction = db.transaction(storeName, mode, { durability: 'default' });
+        } catch (err) {
+            throw err;
+        };
+
+        transaction.onerror = function() {
+            throw transaction.error;
+        };
+
+        transaction.oncomplete = function() {
+            console.debug("transaction complete");
+            return;
+        };
+
         const store = transaction.objectStore(storeName);
 
         const read = store.get(key)
@@ -132,14 +120,31 @@ function readData(transaction, storeName, key, callback) {
 };
 
 /**
- * @param {IDBTransaction} transaction
+ * @param {IDBDatabase} db 
+ * @param {IDBTransactionMode} mode 
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
  * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise< Array<DBData>| Error> }
  */
-function readAllData(transaction, storeName, key, callback) {
+export function readAllData(db, mode, storeName, key, callback) {
     return new Promise(function(resolve, reject) {
+        let transaction;
+        try {
+            transaction = db.transaction(storeName, mode, { durability: 'default' });
+        } catch (err) {
+            throw err;
+        };
+
+        transaction.onerror = function() {
+            throw transaction.error;
+        };
+
+        transaction.oncomplete = function() {
+            console.debug("transaction complete");
+            return;
+        };
+
         const store = transaction.objectStore(storeName);
 
         const read = store.getAll(key)
@@ -161,15 +166,32 @@ function readAllData(transaction, storeName, key, callback) {
 };
 
 /**
- * @param {IDBTransaction} transaction
+ * @param {IDBDatabase} db 
+ * @param {IDBTransactionMode} mode 
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey} key - in our case a number is the key for our object stores
  * @param {DBData} data 
  * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise< 1 | Error>}
  */
-function writeData(transaction, storeName, key, data, callback) {
+export function writeData(db, mode, storeName, key, data, callback) {
     return new Promise(function(resolve, reject) {
+        let transaction;
+        try {
+            transaction = db.transaction(storeName, mode, { durability: 'default' });
+        } catch (err) {
+            throw err;
+        };
+
+        transaction.onerror = function() {
+            throw transaction.error;
+        };
+
+        transaction.oncomplete = function() {
+            console.debug("transaction complete");
+            return;
+        };
+
         const store = transaction.objectStore(storeName);
 
         const write = store.put(data, key);
