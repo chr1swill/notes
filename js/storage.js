@@ -37,6 +37,161 @@ export function initDB() {
 }
 
 /**
+ * @returns {Promise < IDBDatabase | Error >}
+ */
+export function openDB() {
+    return new Promise(function(resolve, reject) {
+        const openRequest = window.indexedDB.open(DB_NAME, DB_VERSION);
+
+        openRequest.onerror = function() {
+            reject(openRequest.error);
+        };
+
+        openRequest.onsuccess = function() {
+            resolve(openRequest.result);
+        };
+
+        openRequest.onupgradeneeded = function() {
+            const db = openRequest.result;
+
+            db.createObjectStore("notes", { keyPath: "id" });
+            db.createObjectStore("folders", { keyPath: "id" });
+            console.debug("Upgraded db: name -> ", DB_NAME, " version -> ", DB_VERSION);
+            resolve(db);
+        };
+
+    });
+};
+
+/**
+ * @param {IDBDatabase} db 
+ * @param {IDBTransactionMode} mode 
+ * @param {"notes" | "folders"} storeName 
+ * @returns {Promise< IDBTransaction | Error >}
+ */
+function createTransaction(db, storeName, mode) {
+    return new Promise(function(resolve, reject) {
+        let transaction;
+
+        try {
+            transaction = db.transaction(storeName, mode, { durability: 'default' });
+        } catch (err) {
+            reject(err);
+            return;
+        };
+
+        transaction.onerror = function() {
+            reject(transaction.error);
+        };
+
+        transaction.oncomplete = function() {
+            resolve(transaction);
+        }
+
+        resolve(transaction);
+    });
+};
+
+
+/**
+ * @typedef {Note | Folder} DBData
+ */
+
+/**
+ * @typedef {Function} DBSuccessCallback
+ * @param {IDBRequest< Array<DBData>>} data
+ */
+
+/**
+ * @param {IDBTransaction} transaction
+ * @param {"notes" | "folders"} storeName
+ * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
+ * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @returns {Promise<DBData | Error> }
+ */
+function readData(transaction, storeName, key, callback) {
+    return new Promise(function(resolve, reject) {
+        const store = transaction.objectStore(storeName);
+
+        const read = store.get(key)
+
+        read.onerror = function() {
+            reject(read.error);
+        }
+
+        read.onsuccess = function() {
+            const data = read.result;
+            if (callback) {
+                callback(Array.from(data));
+                resolve(data);
+            } else {
+                resolve(data);
+            };
+        };
+    });
+};
+
+/**
+ * @param {IDBTransaction} transaction
+ * @param {"notes" | "folders"} storeName
+ * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
+ * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @returns {Promise< Array<DBData>| Error> }
+ */
+function readAllData(transaction, storeName, key, callback) {
+    return new Promise(function(resolve, reject) {
+        const store = transaction.objectStore(storeName);
+
+        const read = store.getAll(key)
+
+        read.onerror = function() {
+            reject(read.error);
+        }
+
+        read.onsuccess = function() {
+            const data = read.result;
+            if (callback) {
+                callback(data);
+                resolve(data);
+            } else {
+                resolve(data);
+            };
+        };
+    });
+};
+
+/**
+ * @param {IDBTransaction} transaction
+ * @param {"notes" | "folders"} storeName
+ * @param {IDBValidKey} key - in our case a number is the key for our object stores
+ * @param {DBData} data 
+ * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @returns {Promise< 1 | Error>}
+ */
+function writeData(transaction, storeName, key, data, callback) {
+    return new Promise(function(resolve, reject) {
+        const store = transaction.objectStore(storeName);
+
+        const write = store.put(data, key);
+
+        write.onerror = function() {
+            reject(write.error);
+        };
+
+        write.onsuccess = function() {
+            if (callback) {
+                //@ts-ignore
+                callback(Array.from(data));
+                resolve(1) 
+            } else {
+                resolve(1)
+            };
+        };
+
+    });
+};
+
+/**
  * @typedef {import('types.js').Folder} Folder
  */
 
