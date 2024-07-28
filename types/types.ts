@@ -24,3 +24,7 @@ export type Folder = {
  *  @example the number used to index into the Folder will be its corresponsing id
  */
 export type FolderCollection = { [key: number]: Folder }
+
+export type DBData = Note | Folder;
+
+export type DBSuccessCallback<T> = (data: T) => T;

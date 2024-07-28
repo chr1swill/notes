@@ -64,12 +64,7 @@ export function openDB() {
 };
 
 /**
- * @typedef {Note | Folder} DBData
- */
-
-/**
- * @typedef {Function} DBSuccessCallback
- * @param {IDBRequest< Array<DBData>>} data
+ * @typedef {import('types.js').DBData} DBData
  */
 
 /**
@@ -77,7 +72,7 @@ export function openDB() {
  * @param {IDBTransactionMode} mode 
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
- * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @param {import('types.js').DBSuccessCallback<DBData>} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise<DBData | Error> }
  */
 export function readData(db, mode, storeName, key, callback) {
@@ -110,8 +105,7 @@ export function readData(db, mode, storeName, key, callback) {
         read.onsuccess = function() {
             const data = read.result;
             if (callback) {
-                callback(Array.from(data));
-                resolve(data);
+                resolve(callback(data));
             } else {
                 resolve(data);
             };
@@ -124,7 +118,7 @@ export function readData(db, mode, storeName, key, callback) {
  * @param {IDBTransactionMode} mode 
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey | IDBKeyRange} key - in our case a number is the key for our object stores
- * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @param {import('types.js').DBSuccessCallback<Array<DBData>>} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise< Array<DBData>| Error> }
  */
 export function readAllData(db, mode, storeName, key, callback) {
@@ -155,9 +149,9 @@ export function readAllData(db, mode, storeName, key, callback) {
 
         read.onsuccess = function() {
             const data = read.result;
+
             if (callback) {
-                callback(data);
-                resolve(data);
+                resolve(callback(data));
             } else {
                 resolve(data);
             };
@@ -171,7 +165,7 @@ export function readAllData(db, mode, storeName, key, callback) {
  * @param {"notes" | "folders"} storeName
  * @param {IDBValidKey} key - in our case a number is the key for our object stores
  * @param {DBData} data 
- * @param {DBSuccessCallback} [callback=undefined] - callback will be performed on sucess event
+ * @param {import('types.js').DBSuccessCallback<DBData>} [callback=undefined] - callback will be performed on sucess event
  * @returns {Promise< 1 | Error>}
  */
 export function writeData(db, mode, storeName, key, data, callback) {
@@ -202,11 +196,11 @@ export function writeData(db, mode, storeName, key, data, callback) {
 
         write.onsuccess = function() {
             if (callback) {
-                //@ts-ignore
-                callback(Array.from(data));
-                resolve(1) 
+                callback(data);
+                resolve(1);
+
             } else {
-                resolve(1)
+                resolve(1);
             };
         };
 

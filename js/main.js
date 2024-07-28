@@ -1,6 +1,6 @@
-import { handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
+import { createFragmentOfElementsForDom, handleClickOnCreateNewFolderButton, openInNoteView, renderListOfLinksToDom } from "./dom-update.js";
 import { createNewNote } from "./notes.js";
-import { addNoteIdToFolderArray, initDB, saveObjectToDB } from "./storage.js";
+import { addNoteIdToFolderArray, initDB, openDB, readData, saveObjectToDB } from "./storage.js";
 
 /**
  * @typedef{import('types.js').Note} Note
@@ -38,7 +38,7 @@ function main() {
         const idOfFolderListContainer = "folder_list_container"
         renderListOfLinksToDom(1, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
 
-        
+
         const newFolderButton = /**@type { HTMLButtonElement | null } */
             (document.getElementById("button_create_new_folder"));
         if (newFolderButton === null) {
@@ -46,18 +46,103 @@ function main() {
             return;
         }
 
-        newFolderButton.onclick = function () {
+        newFolderButton.onclick = function() {
             handleClickOnCreateNewFolderButton(idOfFolderListContainer);
             return;
         };
 
         return;
-    } 
+    }
 
     if (path === '/folder-view/' || path === '/folder-view/index.html') {
         const queriedId = searchParams.get('id');
         const idOfFolderListContainer = "note_list_container";
-        renderListOfLinksToDom(0, idOfFolderListContainer, queriedId === null ? 0 : parseFloat(queriedId));
+        // if the folder-view id is null can't render a folder-view and should just render the list 
+        if (queriedId === null || isNaN(parseFloat(queriedId)) || !isFinite(parseFloat(queriedId))) {
+            // go to the all notes page
+            window.location.href = window.origin + '/folder-view/?id=0';
+            return;
+        } else {
+            const folderId = parseFloat(queriedId);
+
+            openDB()
+                .then(function(db) {
+                    if (db instanceof Error) throw db;
+
+                    if (folderId === 0) {
+                        renderListOfLinksToDom(0, idOfFolderListContainer, folderId);
+                    } else {
+                        readData(db, 'readonly', 'folders', folderId, function(folder) {
+                            if ('id' in folder && 'name' in folder && 'notesInFolder' in folder) {
+                                const noteIds = folder.notesInFolder;
+                                const promiseArray = [];
+
+                                for (let i = 0; i < noteIds.length; i++) {
+                                    promiseArray.push(readData(db, 'readonly', 'notes', noteIds[i]));
+                                }
+
+                                Promise.all(promiseArray)
+                                    .then(function(result) {
+                                        // filtering result array
+                                        for (let i = 0; i < result.length; i++) {
+                                            const current = /**@type{Note | Error}*/(result[i]);
+
+                                            if ('id' in current && 'body' in current && 'folder' in current) {
+                                                // that is what we want do nothing 
+                                                continue;
+                                            }
+
+                                            result.splice(i, 1);
+                                        }
+
+                                        const noteContainer = document.getElementById('note_list_container');
+                                        if (noteContainer === null) {
+                                            console.error("Could not find element with id: #note_list_container");
+                                            return;
+                                        }
+
+                                        const filteredResult = /**@type{Note[]}*/(result);
+                                        if (filteredResult.length < 1) {
+                                            const folderEmptyMessage = document.createElement("p");
+                                            folderEmptyMessage.textContent = "This does not have any notes";
+                                            noteContainer.appendChild(folderEmptyMessage);
+                                            return;
+                                        }
+
+                                        const fragment = createFragmentOfElementsForDom(0, filteredResult);
+
+                                        while (noteContainer.firstChild) {
+                                            noteContainer.removeChild(noteContainer.firstChild);
+                                        }
+
+                                        noteContainer.appendChild(fragment);
+
+                                    })
+                                    .catch(function(err) {
+                                        console.error(err);
+                                    });
+
+                                return folder;
+                            }
+
+                            // for sure should be some sort of error but oh well
+                            return folder;
+                        })
+                            .then(function(result) {
+                                if (result instanceof Error) {
+                                    throw result;
+                                }
+                            })
+                            .catch(function(err) {
+                                console.error(err);
+                            });
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
+
+        };
 
         const newNoteButton = document.getElementById('button_create_new_note');
         if (newNoteButton === null) {
@@ -113,8 +198,8 @@ function main() {
             let folderId;
             const folderParam = searchQuery.get('folder');
             if (
-                folderParam === null || 
-                isNaN(parseFloat(folderParam)) || 
+                folderParam === null ||
+                isNaN(parseFloat(folderParam)) ||
                 !isFinite(parseFloat(folderParam))
             ) {
                 folderId = 0;
@@ -126,32 +211,32 @@ function main() {
             let note = createNewNote();
             if (noteId === null ||
                 isNaN(parseFloat(noteId)) ||
-                !isFinite(parseFloat(noteId)) ) {
+                !isFinite(parseFloat(noteId))) {
                 // assemble a new note
-                
+
                 note.folder = folderId;
                 note.body = noteBody;
 
                 addNoteIdToFolderArray(note.id, note.folder)
-                .then(function(result) {
-                    switch (true) {
-                        case result === 1:
-                            console.debug("Successfully added note id to the folders array of note ids")
-                            console.debug("folder id: ", note.folder);
-                            console.debug("note id added: ", note.id);
-                            break;
-                        case result === -1:
-                            console.warn("Provided input to function was not valid, was take");
-                            break;
-                        case result === 0:
-                            throw new Error("Failed to add note id to folder array an error occured in the process");
-                        default:
-                            throw new Error("Function returned an unexpected result with no handler set up for it");
-                    };
-                })
-                .catch(function(error) {
-                    console.error(error);
-                });
+                    .then(function(result) {
+                        switch (true) {
+                            case result === 1:
+                                console.debug("Successfully added note id to the folders array of note ids")
+                                console.debug("folder id: ", note.folder);
+                                console.debug("note id added: ", note.id);
+                                break;
+                            case result === -1:
+                                console.warn("Provided input to function was not valid, was take");
+                                break;
+                            case result === 0:
+                                throw new Error("Failed to add note id to folder array an error occured in the process");
+                            default:
+                                throw new Error("Function returned an unexpected result with no handler set up for it");
+                        };
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
 
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
@@ -161,25 +246,25 @@ function main() {
                 note.body = noteBody;
 
                 addNoteIdToFolderArray(note.id, note.folder)
-                .then(function(result) {
-                    switch (true) {
-                        case result === 1:
-                            console.debug("Successfully added note id to the folders array of note ids")
-                            console.debug("folder id: ", note.folder);
-                            console.debug("note id added: ", note.id);
-                            break;
-                        case result === -1:
-                            console.warn("Provided input to function was not valid, was take");
-                            break;
-                        case result === 0:
-                            throw new Error("Failed to add note id to folder array an error occured in the process");
-                        default:
-                            throw new Error("Function returned an unexpected result with no handler set up for it");
-                    };
-                })
-                .catch(function(error) {
-                    console.error(error);
-                });
+                    .then(function(result) {
+                        switch (true) {
+                            case result === 1:
+                                console.debug("Successfully added note id to the folders array of note ids")
+                                console.debug("folder id: ", note.folder);
+                                console.debug("note id added: ", note.id);
+                                break;
+                            case result === -1:
+                                console.warn("Provided input to function was not valid, was take");
+                                break;
+                            case result === 0:
+                                throw new Error("Failed to add note id to folder array an error occured in the process");
+                            default:
+                                throw new Error("Function returned an unexpected result with no handler set up for it");
+                        };
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
 
                 textarea.setAttribute('data-note-id', note.id.toString());
                 textarea.setAttribute('data-folder-id', folderId.toString());
@@ -193,16 +278,16 @@ function main() {
             }, 0);
 
             saveObjectToDB(0, note)
-            .then(function(result) {
-                if (result !== 1) {
-                    throw result;
-                } else {
-                    console.debug('Sucessfully saved note');
-                }
-            })
-            .catch(function(err) {
-                console.error(err);
-            });
+                .then(function(result) {
+                    if (result !== 1) {
+                        throw result;
+                    } else {
+                        console.debug('Sucessfully saved note');
+                    }
+                })
+                .catch(function(err) {
+                    console.error(err);
+                });
 
             return;
         };

@@ -14,7 +14,7 @@ import { deleteNotes, getAllObjectsFromDBStore, getObjectFromDBStore, saveObject
  * @param {Array<Folder | Note > | null } data
  * @returns {DocumentFragment}
  */
-function createFragmentOfElementsForDom(listType, data) {
+export function createFragmentOfElementsForDom(listType, data) {
     const fragment = new DocumentFragment();
 
     if (data === null || data.length === 0) {
