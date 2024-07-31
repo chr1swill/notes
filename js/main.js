@@ -74,6 +74,28 @@ function main() {
                     } else {
                         readData(db, 'readonly', 'folders', folderId, function(folder) {
                             if ('id' in folder && 'name' in folder && 'notesInFolder' in folder) {
+
+                                (function updateFolderLayoutTitle() {
+
+                                    const h1 = document.getElementById('folder_name');
+                                    if (h1 === null) {
+                                        console.error("Could not find element with id: #folder_name");
+                                        return;
+                                    };
+
+                                    h1.textContent = folder.name;
+
+                                    const title = document.head.querySelector("title");
+                                    if (title === null) {
+                                        const createdTitle = document.createElement('title');
+                                        createdTitle.textContent = folder.name;
+                                        document.head.appendChild(createdTitle);
+                                    } else {
+                                        title.textContent = folder.name;
+                                    };
+
+                                })();
+
                                 const noteIds = folder.notesInFolder;
                                 const promiseArray = [];
 
