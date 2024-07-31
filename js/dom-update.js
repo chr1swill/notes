@@ -146,7 +146,8 @@ export function createFragmentOfElementsForDom(listType, data) {
         allNotesFolderA.setAttribute('data-folder-id', "0");
         allNotesFolderA.href = window.location.origin + '/folder-view/' + '?id=0';
 
-        fragment.prepend(allNotesFolderLi.appendChild(allNotesFolderA));
+        allNotesFolderLi.appendChild(allNotesFolderA);
+        fragment.prepend(allNotesFolderLi);
     }
 
     return fragment;
